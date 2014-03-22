@@ -1,17 +1,21 @@
-package readIN;
+package com.bitsPlease.FileReconciler;
 import java.util.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.nio.charset.*;
+
 
 public class readInAscii {
 	
     public static void main(String[] args) {
-    	readIn("FIRST.txt");
+    	byte [] f = readIn("FIRST.txt");
+    	writeOut(f, "final.txt");
     }
     
     public static byte[] readIn(String textFile){
+    	/*
+    	 * FileChannel fc = new FileInputStream(file).getChannel();
+MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, (int) fc.size());
+    	 */
+    	
         File file = new File(textFile);
        // List<byte[]> bArray = new ArrayList<byte[]>();
         byte[] b = new byte[(int) file.length()];
@@ -35,80 +39,38 @@ public class readInAscii {
          }
         return b;
       }
-   
-	/*
-	   public static void main(String args[]) throws Exception
-	    {
-		   File file = new File("FIRST.txt");
-			
-			BufferedInputStream bin = null;
-			FileInputStream fin = null;
-
+    
+   public static void writeOut(byte[] b, String textFile){
+	   //try {
+		   
+		//String decoded = new String(b, "ASCII");
+		try {
+	        File file = new File(textFile);
+			FileOutputStream fileOutputStream = new FileOutputStream(file);
 			try {
-				
-				// create FileInputStream object
-				fin = new FileInputStream(file);
-
-				// create object of BufferedInputStream
-				bin = new BufferedInputStream(fin);
-		        List<byte[]> bArray = new ArrayList<byte[]>();
-
-				// read file using BufferedInputStream
-				while (bin.available() > 0) {
-					//System.out.println((char) bin.read());
-					String s = Character.toString((char) bin.read());
-	            	//System.out.println(s);
-	            	byte[] b = s.getBytes("ASCII");
-	            	bArray.add(b);
-				}
-				System.out.println("Done");
-
+				fileOutputStream.write(b);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			catch (FileNotFoundException e) {
-				System.out.println("File not found" + e);
+			try {
+				fileOutputStream.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			catch (IOException ioe) {
-				System.out.println("Exception while reading file " + ioe);
-			}
-			finally {
-				// close the streams using close method
-				try {
-					if (fin != null) {
-						fin.close();
-					}
-					if (bin != null) {
-						bin.close();
-					}
-				}
-				catch (IOException ioe) {
-					System.out.println("Error while closing stream : " + ioe);
-				}
-			}
+			//PrintWriter writer = new PrintWriter("final.txt", "ASCII");
+			//for(int i = 0; i < b.length; i++){
+					//System.out.println(new String(b, "ASCII"));
+				//writer.print(new String(b, "ASCII"));
+			//}
+			//writer.close();
 			
-			}
-	    */
-		   /*
-		   	int BUFSIZE = 256;
-	        String inputFile = "FIRST.txt";
-	        FileInputStream in = new FileInputStream(inputFile);
-	        FileChannel ch = in.getChannel();
-	        ByteBuffer buf = ByteBuffer.allocateDirect(BUFSIZE);  // BUFSIZE = 256
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-	        Charset cs = Charset.forName("ASCII"); 
 
-	        int rd;
-	        while ( (rd = ch.read( buf )) != -1 ) {
-	            buf.rewind();
-	            CharBuffer chbuf = cs.decode(buf);
-	            for ( int i = 0; i < chbuf.length(); i++ ) {
-	                System.out.println(chbuf.get());
-	            }
-	            buf.clear();
-	        }
-	        in.close();
-	    }
-	   */
-	
-	//public static void main(String[] args) {
-	//}
+}
 }
