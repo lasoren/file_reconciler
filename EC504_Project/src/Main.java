@@ -16,26 +16,40 @@ public class Main implements ClientFunctions, ServerFunctions {
 	}
 
 	@Override
-	public void onFirstPacket(String data) {
-		System.out.println("CLIENT GOT PACKET!!!!!!!!");
-		Main.r.send("test3");
+	public void clientOnTestPacket(String data) {
+		System.out.println("Client got server's response, sending final response to server");
+		Main.r.send(ServerOpcodes.test2.name());
 	}
 
 	@Override
-	public void onFirstPacket2(String data) {
-		System.out.println("SERVER GOT PACKET!!!!!!!!");
-		Main.r.send("test1");
-		
+	public void serverOnTestPacket(String data) {
+		System.out.println("Server got initial packet from client. Responding with next packet");
+		Main.r.send(ClientOpcodes.test1.name());
 	}
 
 	@Override
-	public void onSecondPacket(String data) {
-		System.out.println("SERVER GOT FINAL PACKET!!!!!!!!");
+	public void serverOnSecondTestPacket(String data) {
+		System.out.println("Server received final packet from client!");
 		
 	}
 	@Override
-	public void connected() {
-		Main.r.send("test2");
-		
+	public void clientOnConnect() {
+		System.out.println("Client connected to server! Sending initial packet to server");
+		Main.r.send(ServerOpcodes.test1.name());
+	}
+	
+	@Override
+	public void serverOnConnect() {
+		System.out.println("Connected to client!");
+	}
+
+	@Override
+	public void serverOnError(String err) {
+		System.out.println("Error: " + err);
+	}
+
+	@Override
+	public void clientOnError(String err) {
+		System.out.println("Error: " + err);	
 	}
 }
