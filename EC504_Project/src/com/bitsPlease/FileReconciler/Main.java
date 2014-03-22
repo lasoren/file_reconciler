@@ -6,7 +6,7 @@ import org.json.JSONObject;
 public class Main implements ClientFunctions, ServerFunctions {
 
 	static SocketClient r;
-	byte fileArray[] = {'a','b','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','r','r'};
+	byte fileArray[] = {'1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','Z'};
 	RecurrentHasher rh;
 	
 	public static void main(String args[]) {
@@ -23,8 +23,9 @@ public class Main implements ClientFunctions, ServerFunctions {
 	}
 	
 	Main(boolean client) {
-		if (!client) {
-			fileArray[5] = 'z';
+		if (client) {
+			fileArray[fileArray.length-10] = 'Q';
+			fileArray[10] = 'F';
 		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
 	}
@@ -35,7 +36,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 		int recurrence = payload.optInt("recurrence");
 		JSONArray indices = payload.optJSONArray("indices");
 		int indicesarray[] = new int[indices.length()];
-		for (int i = 0; i < indices.length(); ++i) {
+		for (int i = 0; i < indices.length(); i++) {
 		    indicesarray[i] = indices.optInt(i);
 		}
 		JSONObject packet = rh.hashParts(recurrence, indicesarray);
@@ -50,12 +51,12 @@ public class Main implements ClientFunctions, ServerFunctions {
 		JSONArray data = payload.optJSONArray("data");
 
 		int indicesarray[] = new int[indices.length()];
-		for (int i = 0; i < indices.length(); ++i) {
+		for (int i = 0; i < indices.length(); i++) {
 		    indicesarray[i] = indices.optInt(i);
 		}
 		
 		String dataarray[] = new String[data.length()];
-		for (int i = 0; i < data.length(); ++i) {
+		for (int i = 0; i < data.length(); i++) {
 		    dataarray[i] = data.optString(i);
 		}
 		
@@ -72,12 +73,12 @@ public class Main implements ClientFunctions, ServerFunctions {
 		JSONArray data = payload.optJSONArray("data");
 
 		int indicesarray[] = new int[indices.length()];
-		for (int i = 0; i < indices.length(); ++i) {
+		for (int i = 0; i < indices.length(); i++) {
 		    indicesarray[i] = indices.optInt(i);
 		}
 		
 		JSONArray dataarray[] = new JSONArray[data.length()];
-		for (int i = 0; i < data.length(); ++i) {
+		for (int i = 0; i < data.length(); i++) {
 		    dataarray[i] = data.optJSONArray(i);
 		}
 		
