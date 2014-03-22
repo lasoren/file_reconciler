@@ -1,4 +1,5 @@
-package readIN;
+package com.bitsPlease.FileReconciler;
+
 import java.util.*;
 import java.io.*;
 import java.nio.*;

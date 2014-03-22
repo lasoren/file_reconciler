@@ -5,7 +5,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	static SocketClient r;
 	
 	public static void main(String args[]) {
-		CommandLine.check(String args[]);
+		CommandLine.check(args);
 		if (args[0].equals("client")) {
 			Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main());
 			Main.r.start();

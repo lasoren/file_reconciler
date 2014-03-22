@@ -5,8 +5,8 @@ import org.apache.commons.cli.Options;
 
 public class CommandLine {
 	
-	private String fileName;
-	private String ip;
+	static String fileName;
+	static String ip;
 
 	public static void check(String[] args) {
 
@@ -32,11 +32,11 @@ public class CommandLine {
 		
 	}
 	
-	public String getName() {
+	public static String getName() {
 		return fileName;
 	}
 	
-	public String getIP() {
+	public static String getIP() {
 		return ip;
 	}
 
