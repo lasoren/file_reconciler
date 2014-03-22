@@ -14,7 +14,7 @@ import java.io.IOException;
 public class readInAscii {
 
 	public static void main(String[] args) {
-	
+	/*
 		File file = new File("FIRST.txt");
 		
 		BufferedInputStream bin = null;
@@ -62,6 +62,7 @@ public class readInAscii {
 		}
 		
 		}
+		*/
 		
 	/*
 	   public static void main(String args[]) throws Exception
