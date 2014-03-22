@@ -5,11 +5,12 @@ public class Main implements ClientFunctions, ServerFunctions {
 	static SocketClient r;
 	
 	public static void main(String args[]) {
+		CommandLine.check(String args[]);
 		if (args[0].equals("client")) {
-			Main.r = new FRSocketClient("127.0.0.1", 42069, new Main());
+			Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main());
 			Main.r.start();
 		} else if (args[0].equals("server")){
-			Main.r = new FRSocketServer("127.0.0.1", 42069, new Main());
+			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, new Main());
 			Main.r.start();
 		} else {
 			System.out.println("Error");
