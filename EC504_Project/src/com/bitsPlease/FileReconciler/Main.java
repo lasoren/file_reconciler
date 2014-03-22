@@ -1,42 +1,100 @@
 package com.bitsPlease.FileReconciler;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class Main implements ClientFunctions, ServerFunctions {
 
 	static SocketClient r;
+	byte fileArray[] = {'a','b','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','r','r'};
+	RecurrentHasher rh;
 	
 	public static void main(String args[]) {
+		CommandLine.check(args);
 		if (args[0].equals("client")) {
-			Main.r = new FRSocketClient("127.0.0.1", 42069, new Main());
+			Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main(true));
 			Main.r.start();
 		} else if (args[0].equals("server")){
-			Main.r = new FRSocketServer("127.0.0.1", 42069, new Main());
+			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, new Main(false));
 			Main.r.start();
 		} else {
 			System.out.println("Error");
 		}
 	}
+	
+	Main(boolean client) {
+		if (!client) {
+			fileArray[5] = 'z';
+		}
+		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
+	}
 
 	@Override
-	public void clientOnTestPacket(String data) {
+	public void clientOnHashResponse(JSONObject payload) {
 		System.out.println("Client got server's response, sending final response to server");
-		Main.r.send(ServerOpcodes.test2.name());
+		int recurrence = payload.optInt("recurrence");
+		JSONArray indices = payload.optJSONArray("indices");
+		int indicesarray[] = new int[indices.length()];
+		for (int i = 0; i < indices.length(); ++i) {
+		    indicesarray[i] = indices.optInt(i);
+		}
+		JSONObject packet = rh.hashParts(recurrence, indicesarray);
+		Main.r.send(packet.toString());
 	}
 
 	@Override
-	public void serverOnTestPacket(String data) {
-		System.out.println("Server got initial packet from client. Responding with next packet");
-		Main.r.send(ClientOpcodes.test1.name());
+	public void serverOnHashData(JSONObject payload) {
+		System.out.println("Server got packet from client. Responding with next packet");
+		int recurrence = payload.optInt("recurrence");
+		JSONArray indices = payload.optJSONArray("indices");
+		JSONArray data = payload.optJSONArray("data");
+
+		int indicesarray[] = new int[indices.length()];
+		for (int i = 0; i < indices.length(); ++i) {
+		    indicesarray[i] = indices.optInt(i);
+		}
+		
+		String dataarray[] = new String[data.length()];
+		for (int i = 0; i < data.length(); ++i) {
+		    dataarray[i] = data.optString(i);
+		}
+		
+		JSONObject packet = rh.compareParts(recurrence, indicesarray, dataarray);
+		Main.r.send(packet.toString());
+		
 	}
 
 	@Override
-	public void serverOnSecondTestPacket(String data) {
-		System.out.println("Server received final packet from client!");
+	public void serverOnRawData(JSONObject payload) {
+		System.out.println("Server received raw data packet from client!");
+		int recurrence = payload.optInt("recurrence");
+		JSONArray indices = payload.optJSONArray("indices");
+		JSONArray data = payload.optJSONArray("data");
+
+		int indicesarray[] = new int[indices.length()];
+		for (int i = 0; i < indices.length(); ++i) {
+		    indicesarray[i] = indices.optInt(i);
+		}
+		
+		JSONArray dataarray[] = new JSONArray[data.length()];
+		for (int i = 0; i < data.length(); ++i) {
+		    dataarray[i] = data.optJSONArray(i);
+		}
+		
+		JSONObject packet = rh.compareParts(recurrence, indicesarray, dataarray);
+		if (packet == null) {
+			System.out.println("Reconciled!");		
+			System.out.println(new String(this.fileArray));
+		} else {
+			Main.r.send(packet.toString());
+		}
 		
 	}
 	@Override
 	public void clientOnConnect() {
 		System.out.println("Client connected to server! Sending initial packet to server");
-		Main.r.send(ServerOpcodes.test1.name());
+		JSONObject packet = rh.hashParts(0, new int[] {0});
+		Main.r.send(packet.toString());
 	}
 	
 	@Override

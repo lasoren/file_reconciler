@@ -6,14 +6,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 interface ClientFunctions {
-	 void clientOnTestPacket(String data);
+	 void clientOnHashResponse(JSONObject payload);
 	 void clientOnConnect();
 	 void clientOnError(String err);
 }
 
 enum ClientOpcodes {
-    test1
+    hashResponse
 }
 
 public class FRSocketClient extends SocketClient {
@@ -43,6 +46,7 @@ public class FRSocketClient extends SocketClient {
     	
     	if (!connect) {
     		this.clientListener.clientOnError("Error establishing connection");
+    		return;
     	}
     	
     	clientListener.clientOnConnect();
@@ -52,9 +56,14 @@ public class FRSocketClient extends SocketClient {
         	try {
 				if (streamIn.available() != 0) {
 						line = streamIn.readUTF();
-						System.out.println(line);
-						if (line.equals(ClientOpcodes.test1.name())) {
-							clientListener.clientOnTestPacket(line);
+						JSONObject response;
+						try {
+							response = new JSONObject(line);
+							if (response.optString("opcode").equals(ClientOpcodes.hashResponse.name())) {
+								clientListener.clientOnHashResponse(response.optJSONObject("payload"));
+							}
+						} catch (JSONException e) {
+							this.clientListener.clientOnError("Error parsing response");
 						}
 					}
 			} catch (IOException e1) {
