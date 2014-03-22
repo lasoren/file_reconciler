@@ -1,6 +1,5 @@
 package com.bitsPlease.FileReconciler;
 
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -9,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.apache.commons.codec.binary.Hex;
 
 public class RecurrentHasher {
 	
@@ -69,14 +69,11 @@ public class RecurrentHasher {
 				
 				jsonIndices.put(i*2);
 				jsonIndices.put(i*2+1);
-				
-				try {
-					jsonData.put(new String(hashedOne, "UTF-8"));
-					jsonData.put(new String(hashedTwo, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				final long startTime = System.currentTimeMillis();
+				jsonData.put(bytArrayToHex(hashedOne));
+				final long endTime = System.currentTimeMillis();
+
+				jsonData.put(new String(Hex.encodeHex(hashedTwo)));
 			}
 		}
 		else {
@@ -96,13 +93,8 @@ public class RecurrentHasher {
 				jsonIndices.put(i*2);
 				jsonIndices.put(i*2+1);
 				
-				try {
-					jsonData.put(new String(halfOne, "UTF-8"));
-					jsonData.put(new String(halfTwo, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				jsonData.put(new String(halfOne));
+				jsonData.put(new String(halfTwo));
 			}
 		}
 		
@@ -116,7 +108,13 @@ public class RecurrentHasher {
 		System.out.println(payload);
 		return payload;
 	}
-	
+
+	String bytArrayToHex(byte[] a) {
+		   StringBuilder sb = new StringBuilder();
+		   for(byte b: a)
+		      sb.append(String.format("%02x", b & 0xff));
+		   return sb.toString();
+		}
 	public JSONObject compareParts(int recurrence, int indices[], byte data[][], boolean is_raw_text) {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
