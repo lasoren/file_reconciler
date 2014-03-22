@@ -1,3 +1,4 @@
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,16 +9,22 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Date;
 
+interface ClientFunctions {
+	 void onFirstPacket(String data);
+}
+
 public class FRSocketClient implements Runnable {
 	
 	Socket s;
 	boolean connected = false;
 	String server;
 	int port;
+	private ClientFunctions clientListener;
 	
-	FRSocketClient (String ipaddr, int port) {
+	FRSocketClient (String ipaddr, int port, ClientFunctions mainThread) {
 		this.server = ipaddr;
 		this.port = port;
+		this.clientListener = mainThread;
 	}
 	
 	private boolean EstablishConnection() {
@@ -31,6 +38,19 @@ public class FRSocketClient implements Runnable {
 	    }
 	}
 	
+	public void send(String line) {
+    	DataOutputStream streamOut;
+		try {
+			streamOut = new DataOutputStream(this.s.getOutputStream());
+	        streamOut.writeUTF(line);
+	        streamOut.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
     public void run() {
     	try {
     		
@@ -39,21 +59,20 @@ public class FRSocketClient implements Runnable {
     	if (!connect) {
     		System.out.println("Error connecting");
     	}
-    	DataInputStream console;
-    	DataOutputStream streamOut = new DataOutputStream(this.s.getOutputStream());
 
-    	console = new DataInputStream(System.in); //new BufferedReader(new InputStreamReader(s.getInputStream()));
-
+    	DataInputStream streamIn = new DataInputStream(new BufferedInputStream(this.s.getInputStream()));
     	
 			String line = "";
-            while (!line.equals("{end}"))
+            while (true)
             {  
             	
-				line = console.readLine();
+				line = streamIn.readUTF();
+				System.out.println(line);
+				if (line.equals("testing")) {
+					clientListener.onFirstPacket(line);
+				}
+                
 
-                  System.out.println(line);
-                  streamOut.writeUTF(line);
-                  streamOut.flush();
             }
     	} catch (Exception e) {
     		System.out.println(e.getMessage());

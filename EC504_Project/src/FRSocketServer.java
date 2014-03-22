@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -50,15 +51,19 @@ public class FRSocketServer implements Runnable {
  	        while (true) {
  	            Socket socket = this.s.accept();
  	            System.out.println("Accepted conn");
- 	                //PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+ 				DataOutputStream streamOut = new DataOutputStream(socket.getOutputStream());
+ 		        
  	             DataInputStream streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
  	              boolean done = false;
  	              while (!done)
  	              {  try
- 	                 {  String line = streamIn.readUTF();
- 	                    System.out.println(line);
- 	                    done = line.equals("{end}");
+ 	                 {  //String line = streamIn.readUTF();
+ 	                    //System.out.println(line);
+ 	                    //done = line.equals("{end}");
+ 	  		        streamOut.writeUTF("testing");
+ 	 		        streamOut.flush();
+ 	 		        done=true;
  	                 }
  	                 catch(IOException ioe)
  	                 {  done = true;
