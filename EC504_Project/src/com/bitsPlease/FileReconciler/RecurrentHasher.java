@@ -1,5 +1,6 @@
 package com.bitsPlease.FileReconciler;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ public class RecurrentHasher {
 	public static int HASH_LENGTH = 32;
 	
 	byte fileArray[];
-	long fileArraySize;
+	public long fileArraySize;
 	
 	MessageDigest md;
 	
@@ -31,10 +32,10 @@ public class RecurrentHasher {
 	
 	//computer 1 hashes the appropriate parts
 	//start should be recurrence 0, indices [0]
-	public void hashParts(int recurrence, int indices[]) {
+	public JSONObject hashParts(int recurrence, int indices[]) {
 		recurrence++;
 		double divisor = (long) Math.pow(2, recurrence);
-		int partLength = (int) (fileArraySize/divisor);
+		double partLength = (fileArraySize/divisor);
 		
 		JSONObject payload = new JSONObject();
 		
@@ -56,17 +57,26 @@ public class RecurrentHasher {
 			}
 			
 			for (int i = 0; i < indices.length; i++) {
-				byte halfOne[] = Arrays.copyOfRange(fileArray, indices[i]*partLength, indices[i]*partLength + partLength);
-				byte halfTwo[] = Arrays.copyOfRange(fileArray, indices[i]*partLength + partLength, indices[i]*partLength + 2*partLength);
+				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
+				byte halfTwo[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength + partLength), (int) (indices[i]*partLength + 2*partLength));
+				//DEBUG output
+				System.out.println(halfOne.length);
+				System.out.println(halfTwo.length);
+				
 				//hash each part
 				byte hashedOne[] = md.digest(halfOne);
 				byte hashedTwo[] = md.digest(halfTwo);
 				
-				jsonIndices.put(i);
-				jsonIndices.put(i+1);
+				jsonIndices.put(i*2);
+				jsonIndices.put(i*2+1);
 				
-				jsonData.put(hashedOne.toString());
-				jsonData.put(hashedTwo.toString());
+				try {
+					jsonData.put(new String(hashedOne, "UTF-8"));
+					jsonData.put(new String(hashedTwo, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		else {
@@ -77,14 +87,22 @@ public class RecurrentHasher {
 			}
 			
 			for (int i = 0; i < indices.length; i++) {
-				byte halfOne[] = Arrays.copyOfRange(fileArray, indices[i]*partLength, indices[i]*partLength + partLength);
-				byte halfTwo[] = Arrays.copyOfRange(fileArray, indices[i]*partLength + partLength, indices[i]*partLength + 2*partLength);
+				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
+				byte halfTwo[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength + partLength), (int) (indices[i]*partLength + 2*partLength));
+				//DEBUG output
+				System.out.println(halfOne.length);
+				System.out.println(halfTwo.length);
 				
-				jsonIndices.put(i);
-				jsonIndices.put(i+1);
+				jsonIndices.put(i*2);
+				jsonIndices.put(i*2+1);
 				
-				jsonData.put(halfOne.toString());
-				jsonData.put(halfTwo.toString());
+				try {
+					jsonData.put(new String(halfOne, "UTF-8"));
+					jsonData.put(new String(halfTwo, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -96,12 +114,12 @@ public class RecurrentHasher {
 		}
 		
 		System.out.println(payload);
-		
+		return payload;
 	}
 	
-	public void compareParts(int recurrence, int indices[], byte data[][], boolean is_raw_text) {
+	public JSONObject compareParts(int recurrence, int indices[], byte data[][], boolean is_raw_text) {
 		double divisor = (long) Math.pow(2, recurrence);
-		int partLength = (int) (fileArraySize/divisor);
+		double partLength = (fileArraySize/divisor);
 		
 		
 		if (!is_raw_text) {
@@ -116,7 +134,7 @@ public class RecurrentHasher {
 			JSONArray jsonIndices = new JSONArray();
 			
 			for (int i = 0; i < indices.length; i++) {
-				byte oldData[] = Arrays.copyOfRange(fileArray, indices[i]*partLength, indices[i]*partLength + partLength);
+				byte oldData[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
 				
 				byte oldHashed[] = md.digest(oldData);
 				byte newHashed[] = md.digest(data[i]);
@@ -133,20 +151,22 @@ public class RecurrentHasher {
 			}
 			
 			System.out.println(response);
+			return response;
 		}
 		//save data into file and were done!
 		else { 
 			//there should be 5 or less indices at this point
 			for (int i = 0; i < indices.length; i++) {
 				
-				int offset = indices[i]*partLength;
+				int offset = (int) (indices[i]*partLength);
 				
 				for (int j = 0; j < data[i].length; j++) {
 					fileArray[offset] = data[i][j];
 					offset++;
 				}
 			}
-		}	
+			return null;
+		}
 	}
 	
 }
