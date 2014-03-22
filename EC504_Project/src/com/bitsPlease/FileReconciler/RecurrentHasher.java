@@ -35,6 +35,7 @@ public class RecurrentHasher {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
+		JSONObject load = new JSONObject();
 		JSONObject payload = new JSONObject();
 		
 		try {
@@ -47,9 +48,8 @@ public class RecurrentHasher {
 		JSONArray jsonData = new JSONArray();
 		
 		if (partLength > HASH_LENGTH) {
-			
 			try {
-				payload.put("is_raw_text", false);
+				load.put("opcode", ServerOpcodes.hashData.name());
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -74,7 +74,7 @@ public class RecurrentHasher {
 		}
 		else {
 			try {
-				payload.put("is_raw_text", true);
+				load.put("opcode", ServerOpcodes.rawData.name());
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -97,12 +97,13 @@ public class RecurrentHasher {
 		try {
 			payload.put("indices", jsonIndices);
 			payload.put("data", jsonData);
+			load.put("payload", payload);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		
-		System.out.println(payload);
-		return payload;
+		System.out.println(load);
+		return load;
 	}
 	String byteArrayToString(byte[] in) {
 		char out[] = new char[in.length * 2];
@@ -119,9 +120,11 @@ public class RecurrentHasher {
 		
 		
 		if (!is_raw_text) {
+			JSONObject load = new JSONObject();
 			JSONObject response = new JSONObject();
 			
 			try {
+				load.put("opcode", ClientOpcodes.hashResponse.name());
 				response.put("recurrence", recurrence);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -133,21 +136,21 @@ public class RecurrentHasher {
 				byte oldData[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
 				
 				byte oldHashed[] = md.digest(oldData);
-				byte newHashed[] = md.digest(data[i]);
 				
-				if (!oldHashed.equals(newHashed)) {
+				if (!Arrays.equals(oldHashed, data[i])) {
 					jsonIndices.put(i);
 				}
 			}
 			
 			try {
 				response.put("indices", jsonIndices);
+				load.put("payload", response);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			
-			System.out.println(response);
-			return response;
+			System.out.println(load);
+			return load;
 		}
 		//save data into file and were done!
 		else { 

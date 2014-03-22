@@ -2,11 +2,12 @@ sending scheme:
 JSONObjects
 
 Sending hashes from new-filed computer
+"opcode":
+"payload": //this is true when instead of hashes the computer is sending raw text to be replaced in the file
 {
     "recurrence":x, //(2^x possible hashes)
     "indices":[0,1,5, ... x-1] //(indices of the hashes being sent)
     "data":[a326a92d8a0caa96778d0fff2b37f236eb348d7c7e412c45660a432, a326a92d8a0caa96778d0fff2b37f236eb348d7c7e412c45660a432, .... a326a92d8a0caa96778d0fff2b37f236eb348d7c7e412c45660a432] //in the same order as the indices indicators
-    "is_raw_text":false //this is true when instead of hashes the computer is sending raw text to be replaced in the file
 }
 
 Sending feedback from old-filed computer
