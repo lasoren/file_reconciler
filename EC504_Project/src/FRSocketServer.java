@@ -1,36 +1,29 @@
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Date;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.sql.Date;
 
 
-public class FRSocketServer implements Runnable {
+interface ServerFunctions {
+	 void onFirstPacket2(String data);
+	 void onSecondPacket(String data);
+}
+
+public class FRSocketServer extends SocketClient {
 	
+	private ServerFunctions serverListener;
 	ServerSocket s;
-	boolean connected = false;
-	boolean listening = false;
-	String host;
-	int port;
 	
-	FRSocketServer (String ipaddr, int port) {
-		this.host = ipaddr;
-		this.port = port;
+	FRSocketServer (String ipaddr, int port, ServerFunctions mainThread) {
+		super(ipaddr, port);
+		this.serverListener = mainThread;
 	}
 	
 	private boolean ListenForConnection() {
 	    try {    
 	    	this.s = new ServerSocket(this.port);
-	    	this.listening = true;
 	    	return true;
 	    } catch (Exception e) {
 	    	System.out.println("Unable to connect");
@@ -58,16 +51,32 @@ public class FRSocketServer implements Runnable {
  	              boolean done = false;
  	              while (!done)
  	              {  try
- 	                 {  //String line = streamIn.readUTF();
- 	                    //System.out.println(line);
- 	                    //done = line.equals("{end}");
- 	  		        streamOut.writeUTF("testing");
- 	 		        streamOut.flush();
- 	 		        done=true;
+ 	                 {
+ 	            	  if (streamIn.available() != 0) {
+ 	            	  	String line = streamIn.readUTF();
+ 	                    System.out.println(line);
+ 	                    if (line.equals("test2")) {
+ 	                    	this.serverListener.onFirstPacket2(line);
+ 	                    } else if (line.equals("test3")) {
+ 	                    	this.serverListener.onSecondPacket(line);
+ 	                    }
+ 	            	  }
  	                 }
  	                 catch(IOException ioe)
- 	                 {  done = true;
+ 	                
+ 	                 { System.out.println("Exception!");
+ 	                	 done = true;
  	                 }
+ 	             while (!this.sendQueue.isEmpty()) {
+
+             		try {
+             	        streamOut.writeUTF(this.sendQueue.poll());
+             	        streamOut.flush();
+             		} catch (IOException e) {
+             			// TODO Auto-generated catch block
+             			e.printStackTrace();
+             		}
+             	}
  	              }
  	           }
  	        } catch (Exception e) {
