@@ -1,84 +1,66 @@
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Date;
 
 interface ClientFunctions {
-	 void onFirstPacket(String data);
+	 void clientOnTestPacket(String data);
+	 void clientOnConnect();
+	 void clientOnError(String err);
 }
 
-public class FRSocketClient implements Runnable {
+enum ClientOpcodes {
+    test1
+}
+
+public class FRSocketClient extends SocketClient {
 	
-	Socket s;
-	boolean connected = false;
-	String server;
-	int port;
 	private ClientFunctions clientListener;
-	
+	private Socket s;
+
 	FRSocketClient (String ipaddr, int port, ClientFunctions mainThread) {
-		this.server = ipaddr;
-		this.port = port;
+		super(ipaddr, port);
 		this.clientListener = mainThread;
 	}
 	
 	private boolean EstablishConnection() {
 	    try {    
 	    	this.s = new Socket(this.server, this.port);
-	    	this.connected = true;
+	    	this.streamIn = new DataInputStream(new BufferedInputStream(this.s.getInputStream()));
+			this.streamOut = new DataOutputStream(this.s.getOutputStream());
 	    	return true;
 	    } catch (Exception e) {
-	    	System.out.println("Unable to connect");
+	    	this.clientListener.clientOnError("Unable to connect");
 	    	return false;
 	    }
 	}
 	
-	public void send(String line) {
-    	DataOutputStream streamOut;
-		try {
-			streamOut = new DataOutputStream(this.s.getOutputStream());
-	        streamOut.writeUTF(line);
-	        streamOut.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-	
     public void run() {
-    	try {
-    		
-    	
     	boolean connect = this.EstablishConnection();
-    	if (!connect) {
-    		System.out.println("Error connecting");
-    	}
-
-    	DataInputStream streamIn = new DataInputStream(new BufferedInputStream(this.s.getInputStream()));
     	
-			String line = "";
-            while (true)
-            {  
-            	
-				line = streamIn.readUTF();
-				System.out.println(line);
-				if (line.equals("testing")) {
-					clientListener.onFirstPacket(line);
-				}
-                
-
-            }
-    	} catch (Exception e) {
-    		System.out.println(e.getMessage());
+    	if (!connect) {
+    		this.clientListener.clientOnError("Error establishing connection");
     	}
+    	
+    	clientListener.clientOnConnect();
+
+		String line = "";
+        while (true) {  
+        	try {
+				if (streamIn.available() != 0) {
+						line = streamIn.readUTF();
+						System.out.println(line);
+						if (line.equals(ClientOpcodes.test1.name())) {
+							clientListener.clientOnTestPacket(line);
+						}
+					}
+			} catch (IOException e1) {
+				this.clientListener.clientOnError("Error reading packet");
+			}
+    		if (!this.processSendQueue()) {
+    			this.clientListener.clientOnError("Error sending packets");
+    		}
+        }
     }
-   
-   
-	
 }

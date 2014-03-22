@@ -1,78 +1,73 @@
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Date;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.sql.Date;
 
 
-public class FRSocketServer implements Runnable {
+interface ServerFunctions {
+	 void serverOnTestPacket(String data);
+	 void serverOnSecondTestPacket(String data);
+	 void serverOnError(String err);
+	 void serverOnConnect();
+}
+
+enum ServerOpcodes {
+    test1, test2
+}
+
+public class FRSocketServer extends SocketClient {
 	
-	ServerSocket s;
-	boolean connected = false;
-	boolean listening = false;
-	String host;
-	int port;
+	private ServerFunctions serverListener;
+	private ServerSocket serv;
+	private Socket socket;
 	
-	FRSocketServer (String ipaddr, int port) {
-		this.host = ipaddr;
-		this.port = port;
+	FRSocketServer (String ipaddr, int port, ServerFunctions mainThread) {
+		super(ipaddr, port);
+		this.serverListener = mainThread;
 	}
 	
 	private boolean ListenForConnection() {
 	    try {    
-	    	this.s = new ServerSocket(this.port);
-	    	this.listening = true;
+	    	this.serv = new ServerSocket(this.port);
+	    	this.socket = this.serv.accept();
+			this.streamOut = new DataOutputStream(socket.getOutputStream());
+	        this.streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 	    	return true;
 	    } catch (Exception e) {
-	    	System.out.println("Unable to connect");
+	    	this.serverListener.serverOnError("Unable to listen for connection");
 	    	return false;
 	    }
 	}
 	
     public void run() {
-    	boolean listen = this.ListenForConnection();
+    	boolean connect = this.ListenForConnection();
     	
-    	if (!listen) {
-    		System.out.println("Error listening");
-    	} else {
-    		System.out.println("Listening");
+    	if (!connect) {
+    		this.serverListener.serverOnError("Error listening");
     	}
-    	try {
     	
- 	        while (true) {
- 	            Socket socket = this.s.accept();
- 	            System.out.println("Accepted conn");
- 				DataOutputStream streamOut = new DataOutputStream(socket.getOutputStream());
- 		        
- 	             DataInputStream streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-
- 	              boolean done = false;
- 	              while (!done)
- 	              {  try
- 	                 {  //String line = streamIn.readUTF();
- 	                    //System.out.println(line);
- 	                    //done = line.equals("{end}");
- 	  		        streamOut.writeUTF("testing");
- 	 		        streamOut.flush();
- 	 		        done=true;
- 	                 }
- 	                 catch(IOException ioe)
- 	                 {  done = true;
- 	                 }
- 	              }
- 	           }
- 	        } catch (Exception e) {
-    	System.out.println("Error accepting");
-    }
+    	serverListener.serverOnConnect();
+ 	    
+    	while (true) {
+    		try {
+    			if (streamIn.available() != 0) {
+    				String line = streamIn.readUTF();
+    				System.out.println(line);
+    				if (line.equals(ServerOpcodes.test1.name())) {
+    					this.serverListener.serverOnTestPacket(line);
+    				} else if (line.equals(ServerOpcodes.test2.name())) {
+    					this.serverListener.serverOnSecondTestPacket(line);
+    				}
+    			}
+    		} catch(IOException e) { 
+    			this.serverListener.serverOnError("Error reading packet");
+    		}
+    		if (!this.processSendQueue()) {
+    			this.serverListener.serverOnError("Error sending packets");
+    		}
+    	}
     }	
 }
 
