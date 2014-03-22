@@ -1,0 +1,28 @@
+sending scheme:
+JSONObjects
+
+Sending hashes from new-filed computer
+{
+    "recurrence":x, //(2^x possible hashes)
+    "indices":[0,1,5, ... x-1] //(indices of the hashes being sent)
+    "data":[a326a92d8a0caa96778d0fff2b37f236eb348d7c7e412c45660a432, a326a92d8a0caa96778d0fff2b37f236eb348d7c7e412c45660a432, .... a326a92d8a0caa96778d0fff2b37f236eb348d7c7e412c45660a432] //in the same order as the indices indicators
+    "is_raw_text":false //this is true when instead of hashes the computer is sending raw text to be replaced in the file
+}
+
+Sending feedback from old-filed computer
+{
+    "recurrence":x //the response recurrence
+    "differs":[0, ... x-1] // returns the hash indices that were NOT the same, recurse on these indices
+}
+
+Computer 1 (sending new file) divides 100MB in two, hashes the two halves, sends the hashes to the other computer
+
+Computer 2 (reconciling old file) divides 100MB file in two, hashes the two halves, compares the hashes generated locally to the hashes sent from the other computer. Returns the indices of the hashes which differed
+
+RECURSE
+
+STOPPING CONDITION:
+    -if the text size is less than the hashes size:
+        Computer 1 (sending computer) sets "is_raw_text":true
+        Computer 2 replaces text in file with the raw text sent from the computer
+        DONE
