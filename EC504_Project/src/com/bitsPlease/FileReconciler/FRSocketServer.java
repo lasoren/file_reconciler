@@ -7,16 +7,19 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 interface ServerFunctions {
-	 void serverOnTestPacket(String data);
-	 void serverOnSecondTestPacket(String data);
+	 void serverOnHashData(JSONObject payload);
+	 void serverOnRawData(JSONObject payload);
 	 void serverOnError(String err);
 	 void serverOnConnect();
 }
 
 enum ServerOpcodes {
-    test1, test2
+	hashData, rawData
 }
 
 public class FRSocketServer extends SocketClient {
@@ -48,6 +51,7 @@ public class FRSocketServer extends SocketClient {
     	
     	if (!connect) {
     		this.serverListener.serverOnError("Error listening");
+    		return;
     	}
     	
     	serverListener.serverOnConnect();
@@ -57,11 +61,17 @@ public class FRSocketServer extends SocketClient {
     			if (streamIn.available() != 0) {
     				String line = streamIn.readUTF();
     				System.out.println(line);
-    				if (line.equals(ServerOpcodes.test1.name())) {
-    					this.serverListener.serverOnTestPacket(line);
-    				} else if (line.equals(ServerOpcodes.test2.name())) {
-    					this.serverListener.serverOnSecondTestPacket(line);
-    				}
+    				JSONObject response;
+					try {
+						response = new JSONObject(line);
+						if (response.optString("opcode").equals(ServerOpcodes.hashData.name())) {
+							serverListener.serverOnHashData(response.optJSONObject("payload"));
+						} else if (response.optString("opcode").equals(ServerOpcodes.rawData.name())) {
+							serverListener.serverOnRawData(response.optJSONObject("payload"));
+						}
+					} catch (JSONException e) {
+						this.serverListener.serverOnError("Error parsing response");
+					}
     			}
     		} catch(IOException e) { 
     			this.serverListener.serverOnError("Error reading packet");
