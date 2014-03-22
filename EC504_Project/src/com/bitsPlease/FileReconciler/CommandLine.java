@@ -1,7 +1,5 @@
 package com.bitsPlease.FileReconciler;
 
-import java.text.ParseException;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.Options;
 
@@ -20,7 +18,7 @@ public class CommandLine {
 				if (line.hasOption("to")){
 					String fileName = line.getOptionValue("file");
 					String ip = line.getOptionValue("to");
-					// Do the magica
+					// Do the magic
 					// The example to check the parameters
 					System.out.println("Reconcile file " + fileName + " with computer " + ip);
 				}
