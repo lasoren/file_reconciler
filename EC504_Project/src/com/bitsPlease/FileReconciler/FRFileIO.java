@@ -7,8 +7,8 @@ import java.io.*;
 public class FRFileIO {
 	
     public static void main(String[] args) {
-    	byte [] f = readIn("FIRST.txt");
-    	writeOut(f, "final.txt");
+    	//byte [] f = readIn("FIRST.txt");
+    	//writeOut(f, "final.txt");
     }
     
     public static byte[] readIn(String textFile){

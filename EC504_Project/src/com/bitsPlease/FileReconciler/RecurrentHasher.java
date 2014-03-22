@@ -54,6 +54,7 @@ public class RecurrentHasher {
 				e.printStackTrace();
 			}
 			
+			
 			for (int i = 0; i < indices.length; i++) {
 				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength), (int) (2*indices[i]*partLength + partLength));
 				byte halfTwo[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength + partLength), (int) (2*indices[i]*partLength + 2*partLength));

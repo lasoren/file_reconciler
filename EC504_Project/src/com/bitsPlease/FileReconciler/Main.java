@@ -6,26 +6,31 @@ import org.json.JSONObject;
 public class Main implements ClientFunctions, ServerFunctions {
 
 	static SocketClient r;
-	byte fileArray[] = {'1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','Z'};
+	byte fileArray[];
 	RecurrentHasher rh;
 	
 	public static void main(String args[]) {
 		CommandLine.check(args);
 		if (args[0].equals("client")) {
-			Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main(true));
+			Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main(CommandLine.getName(), true));
 			Main.r.start();
 		} else if (args[0].equals("server")){
-			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, new Main(false));
+			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, new Main(CommandLine.getName(), false));
 			Main.r.start();
 		} else {
 			System.out.println("Error");
 		}
 	}
 	
-	Main(boolean client) {
+	Main(String fileName, boolean client) {
+		this.fileArray = FRFileIO.readIn(fileName);
 		if (client) {
 			fileArray[fileArray.length-10] = 'Q';
-			fileArray[10] = 'F';
+			fileArray[53223423] = 'Q';
+			fileArray[23423] = 'Q';
+			fileArray[80000000] = 'Q';
+			fileArray[2232344] = 'Q';
+			fileArray[1337] = 'F';
 		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
 	}
@@ -85,7 +90,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 		JSONObject packet = rh.compareParts(recurrence, indicesarray, dataarray);
 		if (packet == null) {
 			System.out.println("Reconciled!");		
-			System.out.println(new String(this.fileArray));
+			FRFileIO.writeOut(this.fileArray, "out.txt");
 		} else {
 			Main.r.send(packet.toString());
 		}

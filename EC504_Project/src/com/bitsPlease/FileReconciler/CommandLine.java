@@ -18,14 +18,19 @@ public class CommandLine {
 			org.apache.commons.cli.CommandLine line = new BasicParser().parse(opt, args);
 			
 			if(line.hasOption("file")) {
-				if (line.hasOption("to")){
-					fileName = line.getOptionValue("file");
-					ip = line.getOptionValue("to");
-					// Do the magic
-					// The example to check the parameters
-					System.out.println("Reconcile file " + fileName + " with computer " + ip);
-				} else System.out.println("Include the IP of the recepient after the parameter -to");
+				fileName = line.getOptionValue("file");
+
 			} else System.out.println("Include the file name after the parameter -file");
+			
+			if (line.hasOption("to")){
+				
+				ip = line.getOptionValue("to");
+				// Do the magic
+				// The example to check the parameters
+				
+			
+			} else System.out.println("Include the IP of the recepient after the parameter -to");
+			System.out.println("Reconcile file " + fileName + " with computer " + ip);
 		} catch (org.apache.commons.cli.ParseException exp) {
 			System.out.println("Invalid expression: " + exp.getMessage());
 		}
