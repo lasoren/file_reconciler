@@ -1,6 +1,5 @@
 package com.bitsPlease.FileReconciler;
 
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -8,7 +7,6 @@ import java.util.Arrays;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 
 public class RecurrentHasher {
 	
@@ -70,13 +68,8 @@ public class RecurrentHasher {
 				jsonIndices.put(i*2);
 				jsonIndices.put(i*2+1);
 				
-				try {
-					jsonData.put(new String(hashedOne, "UTF-8"));
-					jsonData.put(new String(hashedTwo, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				jsonData.put(byteArrayToString(hashedOne));
+				jsonData.put(byteArrayToString(hashedTwo));
 			}
 		}
 		else {
@@ -96,13 +89,8 @@ public class RecurrentHasher {
 				jsonIndices.put(i*2);
 				jsonIndices.put(i*2+1);
 				
-				try {
-					jsonData.put(new String(halfOne, "UTF-8"));
-					jsonData.put(new String(halfTwo, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				jsonData.put(new String(halfOne));
+				jsonData.put(new String(halfTwo));
 			}
 		}
 		
@@ -115,6 +103,14 @@ public class RecurrentHasher {
 		
 		System.out.println(payload);
 		return payload;
+	}
+	String byteArrayToString(byte[] in) {
+		char out[] = new char[in.length * 2];
+		for (int i = 0; i < in.length; i++) {
+			out[i * 2] = "0123456789ABCDEF".charAt((in[i] >> 4) & 15);
+			out[i * 2 + 1] = "0123456789ABCDEF".charAt(in[i] & 15);
+		}
+		return new String(out);
 	}
 	
 	public JSONObject compareParts(int recurrence, int indices[], byte data[][], boolean is_raw_text) {
