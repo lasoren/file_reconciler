@@ -8,8 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.apache.commons.codec.binary.Hex;
-
 public class RecurrentHasher {
 	
 	public static int HASH_LENGTH = 32;
@@ -69,11 +67,9 @@ public class RecurrentHasher {
 				
 				jsonIndices.put(i*2);
 				jsonIndices.put(i*2+1);
-				final long startTime = System.currentTimeMillis();
-				jsonData.put(bytArrayToHex(hashedOne));
-				final long endTime = System.currentTimeMillis();
-
-				jsonData.put(new String(Hex.encodeHex(hashedTwo)));
+				
+				jsonData.put(byteArrayToString(hashedOne));
+				jsonData.put(byteArrayToString(hashedTwo));
 			}
 		}
 		else {
@@ -108,13 +104,15 @@ public class RecurrentHasher {
 		System.out.println(payload);
 		return payload;
 	}
-
-	String bytArrayToHex(byte[] a) {
-		   StringBuilder sb = new StringBuilder();
-		   for(byte b: a)
-		      sb.append(String.format("%02x", b & 0xff));
-		   return sb.toString();
+	String byteArrayToString(byte[] in) {
+		char out[] = new char[in.length * 2];
+		for (int i = 0; i < in.length; i++) {
+			out[i * 2] = "0123456789ABCDEF".charAt((in[i] >> 4) & 15);
+			out[i * 2 + 1] = "0123456789ABCDEF".charAt(in[i] & 15);
 		}
+		return new String(out);
+	}
+	
 	public JSONObject compareParts(int recurrence, int indices[], byte data[][], boolean is_raw_text) {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
