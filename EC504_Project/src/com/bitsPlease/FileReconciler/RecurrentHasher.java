@@ -89,8 +89,17 @@ public class RecurrentHasher {
 				jsonIndices.put(i*2);
 				jsonIndices.put(i*2+1);
 				
-				jsonData.put(new String(halfOne));
-				jsonData.put(new String(halfTwo));
+				JSONArray half1 = new JSONArray();
+				JSONArray half2 = new JSONArray();
+				for (int j = 0; j < halfOne.length; j++) {
+					half1.put(halfOne[j]);
+				}
+				for (int j = 0; j < halfTwo.length; j++) {
+					half2.put(halfTwo[j]);
+				}
+				
+				jsonData.put(half1);
+				jsonData.put(half2);
 			}
 		}
 		
@@ -105,6 +114,7 @@ public class RecurrentHasher {
 		System.out.println(load);
 		return load;
 	}
+	
 	String byteArrayToString(byte[] in) {
 		char out[] = new char[in.length * 2];
 		for (int i = 0; i < in.length; i++) {
@@ -114,58 +124,59 @@ public class RecurrentHasher {
 		return new String(out);
 	}
 	
-	public JSONObject compareParts(int recurrence, int indices[], byte data[][], boolean is_raw_text) {
+	public JSONObject compareParts(int recurrence, int indices[], String data[]) {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
+		JSONObject load = new JSONObject();
+		JSONObject response = new JSONObject();
 		
-		if (!is_raw_text) {
-			JSONObject load = new JSONObject();
-			JSONObject response = new JSONObject();
-			
-			try {
-				load.put("opcode", ClientOpcodes.hashResponse.name());
-				response.put("recurrence", recurrence);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			
-			JSONArray jsonIndices = new JSONArray();
-			
-			for (int i = 0; i < indices.length; i++) {
-				byte oldData[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
-				
-				byte oldHashed[] = md.digest(oldData);
-				
-				if (!Arrays.equals(oldHashed, data[i])) {
-					jsonIndices.put(i);
-				}
-			}
-			
-			try {
-				response.put("indices", jsonIndices);
-				load.put("payload", response);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			
-			System.out.println(load);
-			return load;
+		try {
+			load.put("opcode", ClientOpcodes.hashResponse.name());
+			response.put("recurrence", recurrence);
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
-		//save data into file and were done!
-		else { 
-			//there should be 5 or less indices at this point
-			for (int i = 0; i < indices.length; i++) {
-				
-				int offset = (int) (indices[i]*partLength);
-				
-				for (int j = 0; j < data[i].length; j++) {
-					fileArray[offset] = data[i][j];
-					offset++;
-				}
+		
+		JSONArray jsonIndices = new JSONArray();
+		
+		for (int i = 0; i < indices.length; i++) {
+			byte oldData[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
+			
+			byte oldHashed[] = md.digest(oldData);
+			String hash = byteArrayToString(oldHashed);
+			
+			if (!hash.equals(data[i])) {
+				jsonIndices.put(i);
 			}
-			return null;
 		}
+		
+		try {
+			response.put("indices", jsonIndices);
+			load.put("payload", response);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println(load);
+		return load;
 	}
 	
+	
+	public JSONObject compareParts(int recurrence, int indices[], JSONArray data[]) {
+		double divisor = (long) Math.pow(2, recurrence);
+		double partLength = (fileArraySize/divisor);
+		
+		//there should be 5 or less indices at this point
+		for (int i = 0; i < indices.length; i++) {
+			
+			int offset = (int) (indices[i]*partLength);
+			
+			for (int j = 0; j < data[i].length(); j++) {
+				fileArray[offset] = (byte) data[i].optInt(j);
+				offset++;
+			}
+		}
+		return null;
+	}
 }
