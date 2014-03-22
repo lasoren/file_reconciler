@@ -32,7 +32,14 @@ public class Main implements ClientFunctions, ServerFunctions {
 	@Override
 	public void clientOnHashResponse(JSONObject payload) {
 		System.out.println("Client got server's response, sending final response to server");
-		Main.r.send(ServerOpcodes.test2.name());
+		int recurrence = payload.optInt("recurrence");
+		JSONArray indices = payload.optJSONArray("indices");
+		int indicesarray[] = new int[indices.length()];
+		for (int i = 0; i < indices.length(); ++i) {
+		    indicesarray[i] = indices.optInt(i);
+		}
+		JSONObject packet = rh.hashParts(recurrence, indicesarray);
+		Main.r.send(packet.toString());
 	}
 
 	@Override
