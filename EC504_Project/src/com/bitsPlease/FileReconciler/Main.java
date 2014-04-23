@@ -1,5 +1,9 @@
 package com.bitsPlease.FileReconciler;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,12 +48,23 @@ public class Main implements ClientFunctions, ServerFunctions {
 		this.file = folder;
 
 		if (client) {
-			fileArray[fileArray.length-10] = 'Q';
-			fileArray[53223423] = 'Q';
-			fileArray[23423] = 'Q';
-			fileArray[80000000] = 'Q';
-			fileArray[2232344] = 'Q';
-			fileArray[1337] = 'F';
+//			fileArray[fileArray.length-10] = 'Q';
+//			fileArray[53223423] = 'Q';
+//			fileArray[23423] = 'Q';
+//			fileArray[80000000] = 'Q';
+//			fileArray[2232344] = 'Q';
+//			fileArray[1337] = 'F';
+			
+			//testing deletions fileArray
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+			try {
+				outputStream.write(Arrays.copyOfRange(fileArray, 0, 2));
+				outputStream.write(new byte[] {'Q'});
+				outputStream.write(Arrays.copyOfRange(fileArray, 4, fileArray.length));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			fileArray = outputStream.toByteArray();
 		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
 		this.isDirectory = isDirectory;
