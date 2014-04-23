@@ -14,6 +14,7 @@ public abstract class SocketClient extends Thread {
 	protected BlockingQueue<String> sendQueue;
 	protected DataInputStream streamIn;
 	protected DataOutputStream streamOut;
+	protected int bytes = 0;
 	
 	SocketClient (String ipaddr, int port) {
 		this.server = ipaddr;
@@ -28,8 +29,11 @@ public abstract class SocketClient extends Thread {
 	protected boolean processSendQueue() {
         while (!this.sendQueue.isEmpty()) {
         	try {
-                streamOut.writeUTF(this.sendQueue.poll());
+        		String packet = this.sendQueue.poll();
+                streamOut.writeUTF(packet);
                 streamOut.flush();
+                bytes = bytes + packet.length();
+                System.out.println(bytes);
         	} catch (IOException e) {
         		return false;
         	}
