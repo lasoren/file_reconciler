@@ -9,15 +9,19 @@ import java.net.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 interface ClientFunctions {
-	 void clientOnHashResponse(JSONObject payload);
+	 void clientOnHashData(JSONObject payload);
+	 void clientOnRawData(JSONObject payload);
+	 void clientOnError(String msg, ClientErrors code);
 	 void clientOnConnect();
-	 void clientOnDirectoryData(JSONObject payload);
-	 void clientOnError(String err);
 }
 
 enum ClientOpcodes {
-    hashResponse
+	hashData, rawData
+}
+enum ClientErrors {
+	errNoHost, errSend, errParse, errRead, errForm, errClose
 }
 
 public class FRSocketClient extends SocketClient {
@@ -37,7 +41,6 @@ public class FRSocketClient extends SocketClient {
 			this.streamOut = new DataOutputStream(this.s.getOutputStream());
 	    	return true;
 	    } catch (Exception e) {
-	    	this.clientListener.clientOnError("Unable to connect");
 	    	return false;
 	    }
 	}
@@ -46,7 +49,7 @@ public class FRSocketClient extends SocketClient {
     	boolean connect = this.EstablishConnection();
     	
     	if (!connect) {
-    		this.clientListener.clientOnError("Error establishing connection");
+    		this.clientListener.clientOnError("Error establishing connection", ClientErrors.errNoHost);
     		return;
     	}
     	
@@ -61,19 +64,30 @@ public class FRSocketClient extends SocketClient {
 						try {
 							response = new JSONObject(line);
 							//System.out.println(line);
-							if (response.optString("opcode").equals(ClientOpcodes.hashResponse.name())) {
-								clientListener.clientOnHashResponse(response.optJSONObject("payload"));
+							if (response.optString("opcode").equals(ClientOpcodes.hashData.name())) {
+								clientListener.clientOnHashData(response.optJSONObject("payload"));
+							} else if (response.optString("opcode").equals(ClientOpcodes.rawData.name())) {
+								clientListener.clientOnRawData(response.optJSONObject("payload"));
 							}
 						} catch (JSONException e) {
-							this.clientListener.clientOnError("Error parsing response");
+							this.clientListener.clientOnError("Error parsing response", ClientErrors.errParse);
 						}
 					}
 			} catch (IOException e1) {
-				this.clientListener.clientOnError("Error reading packet");
+				this.clientListener.clientOnError("Error reading packet", ClientErrors.errRead);
 			}
     		if (!this.processSendQueue()) {
-    			this.clientListener.clientOnError("Error sending packets");
+    			this.clientListener.clientOnError("Error sending packets", ClientErrors.errSend);
     		}
         }
     }
+    
+	@Override
+	public void close() {
+		try {
+			this.s.close();
+		} catch (IOException e) {
+			this.clientListener.clientOnError("Error closing socket", ClientErrors.errClose);
+		}
+	}	
 }
