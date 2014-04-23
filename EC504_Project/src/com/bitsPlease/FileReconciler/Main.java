@@ -21,9 +21,15 @@ public class Main implements ClientFunctions, ServerFunctions {
 	RecurrentHasher rh;
 	boolean isDirectory;
 	File file;
+	boolean client;
 	
 	public static void main(String args[]) {
-		CommandLine.check(args);
+		try {
+			CommandLine.check(args);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		boolean thisIsDirectory = false;
 		File folder = new File(CommandLine.getName());
 		
@@ -35,30 +41,34 @@ public class Main implements ClientFunctions, ServerFunctions {
 		} catch (Exception e) {
 			System.exit(0);
 		}
-		Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main(CommandLine.getName(), true));
+		Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main(CommandLine.getName(), true, thisIsDirectory));
 		Main.r.start();
 	}
 	
 	Main(String fileName, boolean client, boolean isDirectory) {
-		StartRecurrentHashing(fileName, client);
+		this.client = client;
+		this.isDirectory = isDirectory;
+		StartRecurrentHashing(fileName, client, isDirectory);
 	}
 
-	private void StartRecurrentHashing(String fileName, boolean client) {
+	private void StartRecurrentHashing(String fileName, boolean client, boolean isDirectory) {
+		this.isDirectory = isDirectory;
 		this.fileArray = FRFileIO.readIn(fileName);
 		File folder = new File(fileName);
 		this.file = folder;
+		this.client = client;
 
-		if (client) {
-//			fileArray[fileArray.length-10] = 'Q';
-//			fileArray[53223423] = 'Q';
-//			fileArray[23423] = 'Q';
-//			fileArray[80000000] = 'Q';
-//			fileArray[2232344] = 'Q';
+		if (!client) {
+			fileArray[fileArray.length-10] = 'Q';
+			fileArray[53223423] = 'Q';
+			fileArray[23423] = 'Q';
+			fileArray[80000000] = 'Q';
+			fileArray[2232344] = 'Q';
 //			fileArray[1337] = 'F';
 			//}
 			
 			//testing deletions fileArray
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+			/*ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 			try {
 				outputStream.write(Arrays.copyOfRange(fileArray, 0, 2));
 				outputStream.write(new byte[] {'Q'});
@@ -66,10 +76,10 @@ public class Main implements ClientFunctions, ServerFunctions {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			fileArray = outputStream.toByteArray();
+			fileArray = outputStream.toByteArray();*/
+			//fileArray[80000000] = 'Q';
 		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
-		this.isDirectory = isDirectory;
 	}
 
 	@Override
@@ -137,13 +147,11 @@ public class Main implements ClientFunctions, ServerFunctions {
 			}
 		} else {
 			Main.r.send(packet.toString());
-			Main.r.close();
 		}
-		
 	}
 	
 	@Override
-	 public void serverOnDirectoryData(JSONObject payload){
+	 public void clientOnDirectoryData(JSONObject payload){
 		
 		JSONArray fileArray = payload.optJSONArray("data");
 		List<String> finalFileList = new ArrayList<String>();
@@ -172,7 +180,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 		JSONArray jsonData = new JSONArray();
 		
 		try {
-			load.put("opcode", ServerOpcodes.directoryData.name());
+			load.put("opcode", ServerOpcodes.directoryResponse.name());
 			innerLoad.put("data", jsonData);
 			load.put("payload", innerLoad);
 
@@ -198,7 +206,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 		}
 		
 		try {
-			load.put("opcode", ServerOpcodes.directoryData.name());
+			load.put("opcode", ClientOpcodes.directoryData.name());
 			payload.put("data", jsonData);
 			load.put("payload", payload);
 
@@ -210,27 +218,22 @@ public class Main implements ClientFunctions, ServerFunctions {
 
 	}
 	
-	 public void findFile(String name,File file)
-	    {
-	        File[] list = file.listFiles();
-	        if(list!=null)
-	        for (File fil : list)
-	        {
-	            if (fil.isDirectory())
-	            {
-	                findFile(name,fil);
-	            }
-	            else if (name.equalsIgnoreCase(fil.getName()))
-	            {
-	                System.out.println(fil.getParentFile());
-	            }
-	        }
-	    }
-	
-	
 	@Override
-	public void clientOnDirectoryData(JSONObject payload){
+	public void serverOnDirectoryResponse(JSONObject payload){
 		JSONArray fileArray = payload.optJSONArray("data");
+		for(int i = 0; i < fileArray.length(); i++){
+			String fileName = null;
+			try {
+				fileName = fileArray.getString(i);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			
+			StartRecurrentHashing(fileName, this.client, false);
+
+			JSONObject packet = rh.hashParts(0, new int[] {0});
+			Main.r.send(packet.toString());
+		}
 	}
 
 	@Override
@@ -261,7 +264,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	public void clientOnError(String msg, ClientErrors code) {
 		if (code == ClientErrors.errNoHost) {
 			System.out.println("Listening for connection since no open host found");
-			StartRecurrentHashing(CommandLine.getName(), false);
+			StartRecurrentHashing(CommandLine.getName(), false, this.isDirectory);
 			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, this);
 			Main.r.start();
 		} else {

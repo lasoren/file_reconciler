@@ -38,5 +38,7 @@ public abstract class SocketClient extends Thread {
 	}
 	
     public abstract void run();
+
+	public abstract void close();
 	
 }

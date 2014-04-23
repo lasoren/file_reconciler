@@ -15,10 +15,11 @@ interface ClientFunctions {
 	 void clientOnRawData(JSONObject payload);
 	 void clientOnError(String msg, ClientErrors code);
 	 void clientOnConnect();
+	 void clientOnDirectoryData(JSONObject payload);
 }
 
 enum ClientOpcodes {
-	hashData, rawData
+	hashData, rawData, directoryData
 }
 enum ClientErrors {
 	errNoHost, errSend, errParse, errRead, errForm, errClose
@@ -68,6 +69,8 @@ public class FRSocketClient extends SocketClient {
 								clientListener.clientOnHashData(response.optJSONObject("payload"));
 							} else if (response.optString("opcode").equals(ClientOpcodes.rawData.name())) {
 								clientListener.clientOnRawData(response.optJSONObject("payload"));
+							} else if (response.optString("opcode").equals(ClientOpcodes.directoryData.name())) {
+								clientListener.clientOnDirectoryData(response.optJSONObject("payload"));
 							}
 						} catch (JSONException e) {
 							this.clientListener.clientOnError("Error parsing response", ClientErrors.errParse);

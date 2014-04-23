@@ -45,7 +45,7 @@ public class RecurrentHasher {
 				ps.append(" ");
 			}
 		}
-		//System.out.print("[" + ps + "] " + p + "%\r");
+		System.out.print("Client " + FRSocketServer.clientNum + ": [" + ps + "] " + p + "%\r");
 		
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
@@ -64,7 +64,7 @@ public class RecurrentHasher {
 		
 		if (partLength > HASH_LENGTH) {
 			try {
-				load.put("opcode", ServerOpcodes.hashData.name());
+				load.put("opcode", ClientOpcodes.hashData.name());
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -93,7 +93,7 @@ public class RecurrentHasher {
 		}
 		else {
 			try {
-				load.put("opcode", ServerOpcodes.rawData.name());
+				load.put("opcode", ClientOpcodes.rawData.name());
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -160,7 +160,7 @@ public class RecurrentHasher {
 		JSONObject response = new JSONObject();
 		
 		try {
-			load.put("opcode", ClientOpcodes.hashResponse.name());
+			load.put("opcode", ServerOpcodes.hashResponse.name());
 			response.put("recurrence", recurrence);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -250,7 +250,7 @@ public class RecurrentHasher {
 				JSONObject response = new JSONObject();
 				
 				try {
-					load.put("opcode", ClientOpcodes.hashResponse.name());
+					load.put("opcode", ServerOpcodes.hashResponse.name());
 					response.put("recurrence", 0);
 				} catch (JSONException e) {
 					e.printStackTrace();
