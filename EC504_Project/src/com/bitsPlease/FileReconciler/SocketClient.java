@@ -28,7 +28,7 @@ public abstract class SocketClient extends Thread {
 	protected boolean processSendQueue() {
         while (!this.sendQueue.isEmpty()) {
         	try {
-                streamOut.writeBytes(this.sendQueue.poll());
+                streamOut.writeUTF(this.sendQueue.poll());
                 streamOut.flush();
         	} catch (IOException e) {
         		return false;
