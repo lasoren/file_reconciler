@@ -23,7 +23,11 @@ public class Main implements ClientFunctions, ServerFunctions {
 	File file;
 	
 	public static void main(String args[]) {
-		CommandLine.check(args);
+		try {
+			CommandLine.check(args);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		boolean thisIsDirectory = false;
 		File folder = new File(CommandLine.getName());
 		
