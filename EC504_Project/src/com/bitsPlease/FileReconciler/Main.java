@@ -68,7 +68,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 			fileArray[23423] = 'Q';
 			fileArray[80000000] = 'Q';
 			fileArray[2232344] = 'Q';
-			fileArray[1337] = 'F';
+			fileArray[2] = 'F';
 			//}
 			
 			//testing deletions fileArray
@@ -145,7 +145,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 		JSONObject packet = rh.compareParts(recurrence, indicesarray, dataarray);
 		if (packet == null) {
 			//System.out.println("Reconciled!");		
-			FRFileIO.writeOut(this.fileArray, "out.txt");
+			FRFileIO.writeOut(rh.fileArray, "out.txt");
 			try {
 				JSONObject packet2 = new JSONObject();
 				packet2.put("opcode", ServerOpcodes.fileDone.name());
