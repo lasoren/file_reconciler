@@ -16,10 +16,11 @@ interface ServerFunctions {
 	 void serverOnConnect();
 	 void serverOnError(String msg, ServerErrors code);
 	 void serverOnDirectoryResponse(JSONObject payload);
+	 void serverOnFileDone();
 }
 
 enum ServerOpcodes {
-   hashResponse, clientDone, directoryResponse
+   hashResponse, clientDone, directoryResponse, fileDone
 }
 
 enum ServerErrors {
@@ -73,7 +74,7 @@ public class FRSocketServer extends SocketClient {
 						if (response.optString("opcode").equals(ServerOpcodes.hashResponse.name())) {
 							serverListener.serverOnHashResponse(response.optJSONObject("payload"));
 						} else if (response.optString("opcode").equals(ServerOpcodes.clientDone.name())) {
-					    	connect = this.ListenForConnection();
+							connect = this.ListenForConnection();
 					    	
 					    	if (!connect) {
 					    		this.serverListener.serverOnError("Error listening", ServerErrors.errListen);
@@ -83,6 +84,8 @@ public class FRSocketServer extends SocketClient {
 					    	serverListener.serverOnConnect();
 						} else if (response.optString("opcode").equals(ServerOpcodes.directoryResponse.name())) {
 							serverListener.serverOnDirectoryResponse(response.optJSONObject("payload"));
+						} else if (response.optString("opcode").equals(ServerOpcodes.fileDone.name())) {
+					    	serverListener.serverOnFileDone();
 						}
 					} catch (JSONException e) {
 						this.serverListener.serverOnError("Error parsing response", ServerErrors.errParse);

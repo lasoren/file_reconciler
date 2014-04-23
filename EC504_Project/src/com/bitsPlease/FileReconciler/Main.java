@@ -12,7 +12,9 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class Main implements ClientFunctions, ServerFunctions {
 
@@ -22,6 +24,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	boolean isDirectory;
 	File file;
 	boolean client;
+	Queue<String> q = new LinkedList<String>();
 	
 	public static void main(String args[]) {
 		try {
@@ -47,23 +50,25 @@ public class Main implements ClientFunctions, ServerFunctions {
 	Main(String fileName, boolean client, boolean isDirectory) {
 		this.client = client;
 		this.isDirectory = isDirectory;
-		StartRecurrentHashing(fileName, client, isDirectory);
+		File folder = new File(fileName);
+		this.file = folder;
+		if (!isDirectory) {
+			StartRecurrentHashing(fileName, client, isDirectory);
+		}
 	}
 
 	private void StartRecurrentHashing(String fileName, boolean client, boolean isDirectory) {
-		this.isDirectory = isDirectory;
+		//this.isDirectory = isDirectory;
 		this.fileArray = FRFileIO.readIn(fileName);
-		File folder = new File(fileName);
-		this.file = folder;
 		this.client = client;
 
 		if (!client) {
 			fileArray[fileArray.length-10] = 'Q';
-			fileArray[53223423] = 'Q';
+			//fileArray[53223423] = 'Q';
 			fileArray[23423] = 'Q';
 			fileArray[80000000] = 'Q';
 			fileArray[2232344] = 'Q';
-//			fileArray[1337] = 'F';
+			fileArray[1337] = 'F';
 			//}
 			
 			//testing deletions fileArray
@@ -138,9 +143,9 @@ public class Main implements ClientFunctions, ServerFunctions {
 			//System.out.println("Reconciled!");		
 			FRFileIO.writeOut(this.fileArray, "out.txt");
 			try {
-				packet = new JSONObject();
-				packet.put("opcode", ServerOpcodes.clientDone.name());
-				Main.r.send(packet.toString());
+				JSONObject packet2 = new JSONObject();
+				packet2.put("opcode", ServerOpcodes.fileDone.name());
+				Main.r.send(packet2.toString());
 			} catch (Exception e) {
 				clientOnError("Error forming packet", ClientErrors.errForm);
 			}
@@ -180,6 +185,10 @@ public class Main implements ClientFunctions, ServerFunctions {
 		
 		try {
 			load.put("opcode", ServerOpcodes.directoryResponse.name());
+			innerLoad.put("data", jsonData);
+			for (int i=0; i<finalFileList.size(); i++) {
+				jsonData.put(finalFileList.get(i));
+			}
 			innerLoad.put("data", jsonData);
 			load.put("payload", innerLoad);
 
@@ -224,19 +233,47 @@ public class Main implements ClientFunctions, ServerFunctions {
 			String fileName = null;
 			try {
 				fileName = fileArray.getString(i);
+				q.add(fileName);
+				
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			
-			StartRecurrentHashing(fileName, this.client, false);
-
-			JSONObject packet = rh.hashParts(0, new int[] {0});
-			Main.r.send(packet.toString());
 		}
+		String cfn = q.poll();
+		StartRecurrentHashing(cfn, this.client, false);
+		
+		JSONObject packet = new JSONObject();
+		JSONObject newpayload = new JSONObject();
+		try {
+			newpayload.put("filename", cfn);
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			packet.put("opcode", ClientOpcodes.startFile);
+			packet.put("payload", newpayload);
+			Main.r.send(packet.toString());
+			JSONObject senddata = rh.hashParts(0, new int[] {0});
+			Main.r.send(senddata.toString());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+	}
+	
+	@Override
+	public void clientOnStartFile(JSONObject payload) {
+		String fn;
+		fn = payload.optString("filename");
+		StartRecurrentHashing(fn, true, false);
 	}
 
 	@Override
 	public void serverOnConnect() {	
+		System.out.println("Connected to client!");
 		if(this.isDirectory){
 			
 			JSONObject packet = directoryList();
@@ -263,11 +300,31 @@ public class Main implements ClientFunctions, ServerFunctions {
 	public void clientOnError(String msg, ClientErrors code) {
 		if (code == ClientErrors.errNoHost) {
 			System.out.println("Listening for connection since no open host found");
-			StartRecurrentHashing(CommandLine.getName(), false, this.isDirectory);
+			if (!isDirectory) {
+				StartRecurrentHashing(CommandLine.getName(), false, this.isDirectory);
+			}
 			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, this);
 			Main.r.start();
 		} else {
 			System.out.println("Client error: " + msg);
+		}
+	}
+
+	@Override
+	public void serverOnFileDone() {
+		if (!q.isEmpty()) {
+			StartRecurrentHashing(q.poll(), false, false);
+			JSONObject packet = rh.hashParts(0, new int[] {0});
+			Main.r.send(packet.toString());
+		} else {
+			try {
+				JSONObject packet = new JSONObject();
+				packet.put("opcode", ClientOpcodes.clientDone.name());
+				Main.r.send(packet.toString());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }
