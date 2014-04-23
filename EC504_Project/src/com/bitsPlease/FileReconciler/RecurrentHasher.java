@@ -70,7 +70,7 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("Server: [" + ps + "] " + p + "%\r");
+			System.out.print("Client #" + FRSocketServer.clientNum + ": file " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
 		}
 		
 		JSONObject load = new JSONObject();
@@ -193,18 +193,6 @@ public class RecurrentHasher {
 				}
 			}
 			System.out.print("File " + currentfile + " of " + numfiles +" [" + ps + "] " + p + "%\r");
-		}
-		else {
-			p = 100;
-			StringBuilder ps = new StringBuilder();
-			for (int i=0; i<20; i++) {
-				if (i <= p/5) {
-					ps.append("#");
-				} else {
-					ps.append(" ");
-				}
-			}
-			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
 		}
 		
 		JSONObject load = new JSONObject();

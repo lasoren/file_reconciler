@@ -53,6 +53,9 @@ public class Main implements ClientFunctions, ServerFunctions {
 	Main(String fileName, boolean client, boolean isDirectory) {
 		this.client = client;
 		this.isDirectory = isDirectory;
+		if (!isDirectory) {
+			this.currentfile++;
+		}
 		File folder = new File(fileName);
 		this.file = folder;
 		if (!isDirectory) {
@@ -149,7 +152,12 @@ public class Main implements ClientFunctions, ServerFunctions {
 		JSONObject packet = rh.compareParts(recurrence, indicesarray, dataarray);
 		if (packet == null) {
 			//System.out.println("Reconciled!");
-			String fn = file.getAbsolutePath() + "/" + this.currentFileName;
+			String fn;
+			if (isDirectory) {
+				fn = file.getAbsolutePath() + "/" + this.currentFileName;
+			} else {
+				fn = file.getAbsolutePath();
+			}
 			FRFileIO.writeOut(rh.fileArray, fn);
 			this.rh.finishFileProgress();
 			try {
