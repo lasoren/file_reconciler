@@ -25,6 +25,9 @@ public class Main implements ClientFunctions, ServerFunctions {
 	File file;
 	boolean client;
 	Queue<String> q = new LinkedList<String>();
+	String currentFileName;
+	int numfiles = 1;
+	int currentfile = 0;
 	
 	public static void main(String args[]) {
 		try {
@@ -61,28 +64,29 @@ public class Main implements ClientFunctions, ServerFunctions {
 		//this.isDirectory = isDirectory;
 		this.fileArray = FRFileIO.readIn(fileName);
 		this.client = client;
+		this.currentFileName = fileName;
 
-//		if (!client) {
-//			fileArray[fileArray.length-10] = 'Q';
-//			//fileArray[53223423] = 'Q';
-//			fileArray[100] = 'Q';
-//			fileArray[80000000] = 'Q';
-//			fileArray[2232344] = 'Q';
-//			fileArray[2] = 'F';
-//			//}
-//			
-//			//testing deletions fileArray
-//			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-//			try {
-//				outputStream.write(Arrays.copyOfRange(fileArray, 0, 23423+5));
-//				outputStream.write(Arrays.copyOfRange(fileArray, 23423, fileArray.length));
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//			fileArray = outputStream.toByteArray();
-//			//fileArray[80000000] = 'Q';
-//		}
-		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
+		if (!client) {
+			//fileArray[fileArray.length-10] = 'Q';
+			//fileArray[53223423] = 'Q';
+			//fileArray[100] = 'Q';
+			//fileArray[80000000] = 'Q';
+			//fileArray[2232344] = 'Q';
+			fileArray[2] = (byte)(78+this.currentfile);
+			//}
+			
+			//testing deletions fileArray
+			/*ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+			try {
+				outputStream.write(Arrays.copyOfRange(fileArray, 0, 23423+5));
+				outputStream.write(Arrays.copyOfRange(fileArray, 23423, fileArray.length));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			fileArray = outputStream.toByteArray();*/
+			//fileArray[80000000] = 'Q';
+		}
+		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length, this.numfiles, this.currentfile);
 	}
 
 	@Override
@@ -144,8 +148,10 @@ public class Main implements ClientFunctions, ServerFunctions {
 		
 		JSONObject packet = rh.compareParts(recurrence, indicesarray, dataarray);
 		if (packet == null) {
-			//System.out.println("Reconciled!");		
-			FRFileIO.writeOut(rh.fileArray, "out.txt");
+			//System.out.println("Reconciled!");
+			String fn = file.getAbsolutePath() + "/" + this.currentFileName;
+			FRFileIO.writeOut(rh.fileArray, fn);
+			this.rh.finishFileProgress();
 			try {
 				JSONObject packet2 = new JSONObject();
 				packet2.put("opcode", ServerOpcodes.fileDone.name());
@@ -232,6 +238,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	
 	@Override
 	public void serverOnDirectoryResponse(JSONObject payload){
+		this.currentfile = 0;
 		JSONArray fileArray = payload.optJSONArray("data");
 		for(int i = 0; i < fileArray.length(); i++){
 			String fileName = null;
@@ -243,13 +250,16 @@ public class Main implements ClientFunctions, ServerFunctions {
 				e.printStackTrace();
 			}
 		}
+		this.numfiles = q.size();
 		String cfn = q.poll();
+		this.currentfile++;
 		StartRecurrentHashing(cfn, false, false);
 		
 		JSONObject packet = new JSONObject();
 		JSONObject newpayload = new JSONObject();
 		try {
 			newpayload.put("filename", cfn);
+			newpayload.put("numfiles", numfiles);
 		} catch (JSONException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -272,6 +282,10 @@ public class Main implements ClientFunctions, ServerFunctions {
 	public void clientOnStartFile(JSONObject payload) {
 		String fn;
 		fn = payload.optString("filename");
+		if (payload.has("numfiles")) {
+			this.numfiles = payload.optInt("numfiles");
+		}
+		this.currentfile++;
 		StartRecurrentHashing(fn, true, false);
 	}
 
@@ -318,9 +332,21 @@ public class Main implements ClientFunctions, ServerFunctions {
 	@Override
 	public void serverOnFileDone() {
 		if (!q.isEmpty()) {
-			StartRecurrentHashing(q.poll(), false, false);
-			JSONObject packet = rh.hashParts(0, new int[] {0});
+			this.currentfile++;
+			String fn = q.poll();
+			StartRecurrentHashing(fn, false, false);
+			JSONObject packet = new JSONObject();
+			JSONObject newpayload = new JSONObject();
+			try {
+				newpayload.put("filename", fn);
+				packet.put("opcode", ClientOpcodes.startFile);
+				packet.put("payload", newpayload);
+			} catch (Exception e) {
+				
+			}
 			Main.r.send(packet.toString());
+			JSONObject packet2 = rh.hashParts(0, new int[] {0});
+			Main.r.send(packet2.toString());
 		} else {
 			try {
 				JSONObject packet = new JSONObject();

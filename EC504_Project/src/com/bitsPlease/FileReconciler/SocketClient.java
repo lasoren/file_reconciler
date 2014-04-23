@@ -33,12 +33,15 @@ public abstract class SocketClient extends Thread {
                 streamOut.writeUTF(packet);
                 streamOut.flush();
                 bytes = bytes + packet.length();
-                System.out.println(bytes);
         	} catch (IOException e) {
         		return false;
         	}
         }
         return true;
+	}
+	
+	public boolean isQueueEmpty() {
+		return sendQueue.isEmpty();
 	}
 	
     public abstract void run();

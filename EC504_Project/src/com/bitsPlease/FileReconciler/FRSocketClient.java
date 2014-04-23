@@ -77,7 +77,9 @@ public class FRSocketClient extends SocketClient {
 							} else if (response.optString("opcode").equals(ClientOpcodes.clientDone.name())) {
 								JSONObject packet = new JSONObject();
 								packet.put("opcode", ServerOpcodes.clientDone.name());
-								Main.r.send(packet.toString());
+								send(packet.toString());
+								close();
+								break;
 							}
 						} catch (JSONException e) {
 							this.clientListener.clientOnError("Error parsing response", ClientErrors.errParse);
@@ -94,6 +96,7 @@ public class FRSocketClient extends SocketClient {
     
 	@Override
 	public void close() {
+		this.processSendQueue();
 		try {
 			this.s.close();
 		} catch (IOException e) {

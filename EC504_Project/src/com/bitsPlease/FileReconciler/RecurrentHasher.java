@@ -20,10 +20,15 @@ public class RecurrentHasher {
 	MessageDigest md;
 	
 	boolean allDone = false;
+	int numtrials = 1;
+	int numfiles = 1;
+	int currentfile = 1;
 	
-	public RecurrentHasher(byte fileArray[], long fileArraySize) {
+	public RecurrentHasher(byte fileArray[], long fileArraySize, int numfiles, int currentfile) {
 		this.fileArray = fileArray;
 		this.fileArraySize = fileArraySize;
+		this.numfiles = numfiles;
+		this.currentfile = currentfile;
 		
 		try {
 			md = MessageDigest.getInstance("MD5");
@@ -36,7 +41,7 @@ public class RecurrentHasher {
 	//start should be recurrence 0, indices [0]
 	public JSONObject hashParts(int recurrence, int indices[]) {
 		recurrence++;
-		float p = Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)));
+		float p = ((currentfile-1)*100/numfiles) + Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)))/numfiles;
 		StringBuilder ps = new StringBuilder();
 		for (int i=0; i<20; i++) {
 			if (i <= p/5) {
@@ -45,7 +50,7 @@ public class RecurrentHasher {
 				ps.append(" ");
 			}
 		}
-		System.out.print("Client " + FRSocketServer.clientNum + ": [" + ps + "] " + p + "%\r");
+		System.out.print("Client " + FRSocketServer.clientNum + ", file " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
 		
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
@@ -66,6 +71,7 @@ public class RecurrentHasher {
 		JSONArray jsonData = new JSONArray();
 		
 		if (partLength > HASH_LENGTH) {
+			
 			try {
 				load.put("opcode", ClientOpcodes.hashData.name());
 			} catch (JSONException e) {
@@ -152,7 +158,7 @@ public class RecurrentHasher {
 	}
 	
 	public JSONObject compareParts(int recurrence, int indices[], String data[]) {
-		float p = Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)));
+		float p = ((currentfile-1)*100/numfiles) + Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)))/numfiles;
 		StringBuilder ps = new StringBuilder();
 		for (int i=0; i<20; i++) {
 			if (i <= p/5) {
@@ -161,7 +167,7 @@ public class RecurrentHasher {
 				ps.append(" ");
 			}
 		}
-		System.out.print("[" + ps + "] " + p + "%\r");
+		System.out.print("File " + currentfile + " of " + numfiles +" [" + ps + "] " + p + "%\r");
 		
 		
 		double divisor = (long) Math.pow(2, recurrence);
@@ -234,6 +240,7 @@ public class RecurrentHasher {
 			int longestLen = longest.length();
 			
 			int updateIdx = update.indexOf(longest);
+
 			//System.out.println("Update Idx: " + updateIdx);
 			if (longestLen < update.length() && (updateIdx != 0 || i == indices.length-1)) {
 				//insertion, deletion, or modification exists here!
@@ -256,12 +263,13 @@ public class RecurrentHasher {
 				}
 				fileArray = outputStream.toByteArray();
 				//this.fileArraySize += difference;
-				System.out.println("File Index: "+start);
-				System.out.println("Update: "+update);
-				System.out.println("Old:    "+old);
-				System.out.println("Shift: "+difference);
+				//System.out.println("File Index: "+start);
+				//System.out.println("Update: "+update);
+				//System.out.println("Old:    "+old);
+				//System.out.println("Shift: "+difference);
 				allDone = false;
 				//need to start over now
+				numtrials++;
 				JSONObject load = new JSONObject();
 				JSONObject response = new JSONObject();
 				
@@ -308,5 +316,18 @@ public class RecurrentHasher {
 	         }
 	    }
 	    return S1.substring(Start, (Start + Max));
+	}
+	
+	public void finishFileProgress() {
+		float p = (float) (100.0*((float)currentfile/numfiles));
+		StringBuilder ps = new StringBuilder();
+		for (int i=0; i<20; i++) {
+			if (i <= p/5) {
+				ps.append("#");
+			} else {
+				ps.append(" ");
+			}
+		}
+		System.out.print("File " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
 	}
 }

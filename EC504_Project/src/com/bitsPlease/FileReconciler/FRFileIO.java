@@ -60,22 +60,13 @@ public class FRFileIO {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			//PrintWriter writer = new PrintWriter("final.txt", "ASCII");
 			//for(int i = 0; i < b.length; i++){
             //System.out.println(new String(b, "ASCII"));
             //writer.print(new String(b, "ASCII"));
 			//}
 			//writer.close();
-			float p = 100;
-			StringBuilder ps = new StringBuilder();
-			for (int i=0; i<20; i++) {
-				if (i <= p/5) {
-					ps.append("#");
-				} else {
-					ps.append(" ");
-				}
-			}
-			System.out.print("[" + ps + "] " + p + "%\r");
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
