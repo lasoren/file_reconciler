@@ -1,5 +1,7 @@
 package com.bitsPlease.FileReconciler;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -16,6 +18,8 @@ public class RecurrentHasher {
 	public long fileArraySize;
 	
 	MessageDigest md;
+	
+	boolean allDone = false;
 	
 	public RecurrentHasher(byte fileArray[], long fileArraySize) {
 		this.fileArray = fileArray;
@@ -41,7 +45,7 @@ public class RecurrentHasher {
 				ps.append(" ");
 			}
 		}
-		System.out.print("[" + ps + "] " + p + "%\r");
+		//System.out.print("[" + ps + "] " + p + "%\r");
 		
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
@@ -71,11 +75,14 @@ public class RecurrentHasher {
 					md.update(fileArray[k]);
 				}
 				byte hashedOne[] = md.digest();
+				md.reset();
+				
 				
 				for (int k = (int) (2*indices[i]*partLength + partLength); k < (int) (2*indices[i]*partLength + 2*partLength); k++) {
 					md.update(fileArray[k]);
 				}
 				byte hashedTwo[] = md.digest();
+				md.reset();
 				
 				jsonIndices.put(indices[i]*2);
 				jsonIndices.put(indices[i]*2+1);
@@ -92,8 +99,8 @@ public class RecurrentHasher {
 			}
 			
 			for (int i = 0; i < indices.length; i++) {
-				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength), (int) (2*indices[i]*partLength + partLength));
-				byte halfTwo[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength + partLength), (int) (2*indices[i]*partLength + 2*partLength));
+				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength), (int) (2*indices[i]*partLength + 2*partLength));
+				byte halfTwo[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength + partLength), (int) (2*indices[i]*partLength + 3*partLength));
 				
 				jsonIndices.put(indices[i]*2);
 				jsonIndices.put(indices[i]*2+1);
@@ -162,15 +169,17 @@ public class RecurrentHasher {
 		JSONArray jsonIndices = new JSONArray();
 		
 		for (int i = 0; i < indices.length; i++) {
-			byte oldData[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
-			//DEBUG output
-			//System.out.println(oldData.length);
+			for (int k = (int) (indices[i]*partLength); k < (int) (indices[i]*partLength + partLength); k++) {
+				md.update(fileArray[k]);
+			}
+			byte oldHashed[] = md.digest();
+			md.reset();
 			
-			byte oldHashed[] = md.digest(oldData);
 			String hash = byteArrayToString(oldHashed);
 			
 			if (!hash.equals(data[i])) {
 				jsonIndices.put(indices[i]);
+				break;
 			}
 		}
 		
@@ -190,16 +199,98 @@ public class RecurrentHasher {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
-		//there should be 10 or less indices at this point
+		//there should be 2 or less indices at this point
+		//System.out.println("Number of indices: " + indices.length);
 		for (int i = 0; i < indices.length; i++) {
+			int length = data[i].length();
+			byte updated[] = new byte[length];
+			for (int j = 0; j < length; j++) {
+				updated[j] = (byte) data[i].optInt(j);
+			}
 			
-			int offset = (int) (indices[i]*partLength);
+			String update = byteArrayToString(updated);
 			
-			for (int j = 0; j < data[i].length(); j++) {
-				fileArray[offset] = (byte) data[i].optInt(j);
-				offset++;
+			int start = (int) (indices[i]*partLength);
+			int end = (int) (indices[i]*partLength + 2*partLength);
+			byte olded[] = Arrays.copyOfRange(fileArray, start, end);
+			String old = byteArrayToString(olded);
+			
+			String longest = longestCommonSubstring(update, old);
+			//System.out.println("Longest: "+longest);
+			int longestLen = longest.length();
+			
+			int updateIdx = update.indexOf(longest);
+			//System.out.println("Update Idx: " + updateIdx);
+			if (longestLen < update.length() && updateIdx != 0) {
+				//insertion, deletion, or modification exists here!
+				int oldIdx = old.indexOf(longest);
+				
+				int difference = (updateIdx - oldIdx)/2; //how much we need to shift by
+				
+				//if difference > 0, update has insertions
+				//if difference < 0, update has deletions
+				
+				//replace fileArray
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+				try {
+					outputStream.write(Arrays.copyOfRange(fileArray, 0, start));
+					outputStream.write(updated);
+					outputStream.write(Arrays.copyOfRange(fileArray, end-difference, fileArray.length));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				fileArray = outputStream.toByteArray();
+				System.out.println(update);
+				System.out.println(old);
+				System.out.println(difference);
+				//System.out.println(start);
+				allDone = false;
+				//need to start over now
+				JSONObject load = new JSONObject();
+				JSONObject response = new JSONObject();
+				
+				try {
+					load.put("opcode", ClientOpcodes.hashResponse.name());
+					response.put("recurrence", 0);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				JSONArray jsonIndices = new JSONArray();
+				jsonIndices.put(0);
+				try {
+					response.put("indices", jsonIndices);
+					load.put("payload", response);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				return load;
 			}
 		}
+		allDone = true;
 		return null;
+	}
+	
+	private static String longestCommonSubstring(String S1, String S2)
+	{
+	    int Start = 0;
+	    int Max = 0;
+	    for (int i = 0; i < S1.length(); i++)
+	    {
+	        for (int j = 0; j < S2.length(); j++)
+	        {
+	            int x = 0;
+	            while (S1.charAt(i + x) == S2.charAt(j + x))
+	            {
+	                x++;
+	                if (((i + x) >= S1.length()) || ((j + x) >= S2.length())) break;
+	            }
+	            if (x > Max)
+	            {
+	                Max = x;
+	                Start = i;
+	            }
+	         }
+	    }
+	    return S1.substring(Start, (Start + Max));
 	}
 }
