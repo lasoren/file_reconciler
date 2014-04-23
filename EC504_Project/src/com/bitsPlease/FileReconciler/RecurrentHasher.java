@@ -99,8 +99,16 @@ public class RecurrentHasher {
 			}
 			
 			for (int i = 0; i < indices.length; i++) {
-				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength), (int) (2*indices[i]*partLength + 2*partLength));
-				byte halfTwo[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength + partLength), (int) (2*indices[i]*partLength + 3*partLength));
+				int end = (int) (2*indices[i]*partLength + 2*partLength);
+				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength), end);
+				end = (int) (2*indices[i]*partLength + 3*partLength);
+				byte halfTwo[] = null;
+				if (end >= fileArraySize) {
+					halfTwo = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength + partLength), (int) fileArraySize);
+				}
+				else {
+					halfTwo = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength + partLength), end);
+				}
 				
 				jsonIndices.put(indices[i]*2);
 				jsonIndices.put(indices[i]*2+1);

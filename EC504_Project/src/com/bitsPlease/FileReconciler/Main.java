@@ -27,7 +27,6 @@ public class Main implements ClientFunctions, ServerFunctions {
 		try {
 			CommandLine.check(args);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		boolean thisIsDirectory = false;
