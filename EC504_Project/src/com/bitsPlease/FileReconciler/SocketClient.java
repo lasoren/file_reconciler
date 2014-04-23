@@ -1,5 +1,6 @@
 package com.bitsPlease.FileReconciler;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,7 +12,7 @@ public abstract class SocketClient extends Thread {
 	protected String server;
 	protected int port;
 	protected BlockingQueue<String> sendQueue;
-	protected DataInputStream streamIn;
+	protected BufferedReader streamIn;
 	protected DataOutputStream streamOut;
 	
 	SocketClient (String ipaddr, int port) {
@@ -27,7 +28,7 @@ public abstract class SocketClient extends Thread {
 	protected boolean processSendQueue() {
         while (!this.sendQueue.isEmpty()) {
         	try {
-                streamOut.writeUTF(this.sendQueue.poll());
+                streamOut.writeBytes(this.sendQueue.poll());
                 streamOut.flush();
         	} catch (IOException e) {
         		return false;
