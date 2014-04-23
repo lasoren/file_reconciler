@@ -67,12 +67,12 @@ public class RecurrentHasher {
 			
 			
 			for (int i = 0; i < indices.length; i++) {
-				for (int k = (int) (2*indices[i]*partLength); k <= (int) (2*indices[i]*partLength + partLength); k++) {
+				for (int k = (int) (2*indices[i]*partLength); k < (int) (2*indices[i]*partLength + partLength); k++) {
 					md.update(fileArray[k]);
 				}
 				byte hashedOne[] = md.digest();
 				
-				for (int k = (int) (2*indices[i]*partLength + partLength); k <= (int) (2*indices[i]*partLength + 2*partLength); k++) {
+				for (int k = (int) (2*indices[i]*partLength + partLength); k < (int) (2*indices[i]*partLength + 2*partLength); k++) {
 					md.update(fileArray[k]);
 				}
 				byte hashedTwo[] = md.digest();
