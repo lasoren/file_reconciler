@@ -61,7 +61,7 @@ public class RecurrentHasher {
 			System.out.print("Client #" + FRSocketServer.clientNum + ": file " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
 		}
 		else {
-			p = 100;
+			p = 100*((float)currentfile/numfiles);
 			StringBuilder ps = new StringBuilder();
 			for (int i=0; i<20; i++) {
 				if (i <= p/5) {

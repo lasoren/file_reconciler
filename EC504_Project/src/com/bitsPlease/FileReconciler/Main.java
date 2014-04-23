@@ -75,11 +75,11 @@ public class Main implements ClientFunctions, ServerFunctions {
 			//fileArray[100] = 'Q';
 			//fileArray[80000000] = 'Q';
 			//fileArray[2232344] = 'Q';
-			fileArray[2] = (byte)(78+this.currentfile);
+			fileArray[2] = (byte)(80+this.currentfile);
 			//}
 			
 			//testing deletions fileArray
-			/*ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 			try {
 				outputStream.write(Arrays.copyOfRange(fileArray, 0, 23423+5));
 				outputStream.write(Arrays.copyOfRange(fileArray, 23423, fileArray.length));
@@ -87,7 +87,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 				e.printStackTrace();
 			}
 			fileArray = outputStream.toByteArray();
-			//fileArray[80000000] = 'Q';*/
+			fileArray[80000000] = 'Q';
 		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length, this.numfiles, this.currentfile);
 	}
