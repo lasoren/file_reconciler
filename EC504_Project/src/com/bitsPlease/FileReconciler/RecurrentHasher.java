@@ -220,8 +220,20 @@ public class RecurrentHasher {
 			
 			int start = (int) (indices[i]*partLength);
 			int end = (int) (indices[i]*partLength + 2*partLength);
+			if (end >= fileArraySize) {
+				end = (int) fileArraySize;
+			}
 			byte olded[] = Arrays.copyOfRange(fileArray, start, end);
 			String old = byteArrayToString(olded);
+			
+//			if (length <= partLength) {
+//				StringBuilder sb = new StringBuilder();
+//				for (int x = 0; x < partLength*2; x++) {
+//					sb.append("00");
+//				}
+//				update = update + sb.toString();
+//				old = old + sb.toString();
+//			}
 			
 			String longest = longestCommonSubstring(update, old);
 			//System.out.println("Longest: "+longest);
@@ -229,7 +241,7 @@ public class RecurrentHasher {
 			
 			int updateIdx = update.indexOf(longest);
 			//System.out.println("Update Idx: " + updateIdx);
-			if (longestLen < update.length() && updateIdx != 0) {
+			if (longestLen < update.length() && (updateIdx != 0 || i == indices.length-1)) {
 				//insertion, deletion, or modification exists here!
 				int oldIdx = old.indexOf(longest);
 				
@@ -248,10 +260,10 @@ public class RecurrentHasher {
 					e.printStackTrace();
 				}
 				fileArray = outputStream.toByteArray();
-				System.out.println(update);
-				System.out.println(old);
-				System.out.println(difference);
-				//System.out.println(start);
+				System.out.println("File Index: "+start);
+				System.out.println("Update: "+update);
+				System.out.println("Old:    "+old);
+				System.out.println("Shift: "+difference);
 				allDone = false;
 				//need to start over now
 				JSONObject load = new JSONObject();
