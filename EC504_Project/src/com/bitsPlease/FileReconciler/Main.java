@@ -62,26 +62,26 @@ public class Main implements ClientFunctions, ServerFunctions {
 		this.fileArray = FRFileIO.readIn(fileName);
 		this.client = client;
 
-		if (!client) {
-			fileArray[fileArray.length-10] = 'Q';
-			//fileArray[53223423] = 'Q';
-			fileArray[100] = 'Q';
-			fileArray[80000000] = 'Q';
-			fileArray[2232344] = 'Q';
-			fileArray[2] = 'F';
-			//}
-			
-			//testing deletions fileArray
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-			try {
-				outputStream.write(Arrays.copyOfRange(fileArray, 0, 23423+5));
-				outputStream.write(Arrays.copyOfRange(fileArray, 23423, fileArray.length));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			fileArray = outputStream.toByteArray();
-			//fileArray[80000000] = 'Q';
-		}
+//		if (!client) {
+//			fileArray[fileArray.length-10] = 'Q';
+//			//fileArray[53223423] = 'Q';
+//			fileArray[100] = 'Q';
+//			fileArray[80000000] = 'Q';
+//			fileArray[2232344] = 'Q';
+//			fileArray[2] = 'F';
+//			//}
+//			
+//			//testing deletions fileArray
+//			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+//			try {
+//				outputStream.write(Arrays.copyOfRange(fileArray, 0, 23423+5));
+//				outputStream.write(Arrays.copyOfRange(fileArray, 23423, fileArray.length));
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//			fileArray = outputStream.toByteArray();
+//			//fileArray[80000000] = 'Q';
+//		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
 	}
 
