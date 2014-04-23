@@ -38,7 +38,7 @@ public class FRSocketServer extends SocketClient {
 	    	this.serv = new ServerSocket(this.port);
 	    	this.socket = this.serv.accept();
 			this.streamOut = new DataOutputStream(socket.getOutputStream());
-	        this.streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+	        this.streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream())); //new
 	    	return true;
 	    } catch (Exception e) {
 	    	this.serverListener.serverOnError("Unable to listen for connection");
@@ -60,7 +60,7 @@ public class FRSocketServer extends SocketClient {
     		try {
     			if (streamIn.available() != 0) {
     				String line = streamIn.readUTF();
-    				System.out.println(line);
+    				//System.out.println(line);
     				JSONObject response;
 					try {
 						response = new JSONObject(line);

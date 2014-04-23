@@ -37,7 +37,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 
 	@Override
 	public void clientOnHashResponse(JSONObject payload) {
-		System.out.println("Client got server's response, sending final response to server");
+		//System.out.println("Client got server's response, sending final response to server");
 		int recurrence = payload.optInt("recurrence");
 		JSONArray indices = payload.optJSONArray("indices");
 		int indicesarray[] = new int[indices.length()];
@@ -50,7 +50,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 
 	@Override
 	public void serverOnHashData(JSONObject payload) {
-		System.out.println("Server got packet from client. Responding with next packet");
+		//System.out.println("Server got packet from client. Responding with next packet");
 		int recurrence = payload.optInt("recurrence");
 		JSONArray indices = payload.optJSONArray("indices");
 		JSONArray data = payload.optJSONArray("data");
@@ -72,7 +72,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 
 	@Override
 	public void serverOnRawData(JSONObject payload) {
-		System.out.println("Server received raw data packet from client!");
+		//System.out.println("Server received raw data packet from client!");
 		int recurrence = payload.optInt("recurrence");
 		JSONArray indices = payload.optJSONArray("indices");
 		JSONArray data = payload.optJSONArray("data");
@@ -89,7 +89,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 		
 		JSONObject packet = rh.compareParts(recurrence, indicesarray, dataarray);
 		if (packet == null) {
-			System.out.println("Reconciled!");		
+			//System.out.println("Reconciled!");		
 			FRFileIO.writeOut(this.fileArray, "out.txt");
 		} else {
 			Main.r.send(packet.toString());
@@ -98,7 +98,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	}
 	@Override
 	public void clientOnConnect() {
-		System.out.println("Client connected to server! Sending initial packet to server");
+		//System.out.println("Client connected to server! Sending initial packet to server");
 		JSONObject packet = rh.hashParts(0, new int[] {0});
 		Main.r.send(packet.toString());
 	}
@@ -110,11 +110,11 @@ public class Main implements ClientFunctions, ServerFunctions {
 
 	@Override
 	public void serverOnError(String err) {
-		System.out.println("Error: " + err);
+		//System.out.println("Error: " + err);
 	}
 
 	@Override
 	public void clientOnError(String err) {
-		System.out.println("Error: " + err);	
+		//System.out.println("Error: " + err);	
 	}
 }

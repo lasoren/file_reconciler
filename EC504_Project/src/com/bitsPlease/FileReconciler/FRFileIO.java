@@ -66,6 +66,16 @@ public class FRFileIO {
             //writer.print(new String(b, "ASCII"));
 			//}
 			//writer.close();
+			float p = 100;
+			StringBuilder ps = new StringBuilder();
+			for (int i=0; i<20; i++) {
+				if (i <= p/5) {
+					ps.append("#");
+				} else {
+					ps.append(" ");
+				}
+			}
+			System.out.print("[" + ps + "] " + p + "%\r");
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
