@@ -55,6 +55,9 @@ public class RecurrentHasher {
 		
 		try {
 			payload.put("recurrence", recurrence);
+			if (recurrence == 1) {
+				payload.put("arraysize", (int) fileArraySize);
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -177,7 +180,7 @@ public class RecurrentHasher {
 		JSONArray jsonIndices = new JSONArray();
 		
 		for (int i = 0; i < indices.length; i++) {
-			for (int k = (int) (indices[i]*partLength); k < (int) (indices[i]*partLength + partLength); k++) {
+			for (int k = (int) (indices[i]*partLength); k < (int) (indices[i]*partLength + partLength) && k < fileArray.length; k++) {
 				md.update(fileArray[k]);
 			}
 			byte oldHashed[] = md.digest();
@@ -220,6 +223,9 @@ public class RecurrentHasher {
 			
 			int start = (int) (indices[i]*partLength);
 			int end = (int) (indices[i]*partLength + 2*partLength);
+			if (end >= fileArraySize) {
+				end = (int) fileArraySize;
+			}
 			byte olded[] = Arrays.copyOfRange(fileArray, start, end);
 			String old = byteArrayToString(olded);
 			
@@ -229,7 +235,7 @@ public class RecurrentHasher {
 			
 			int updateIdx = update.indexOf(longest);
 			//System.out.println("Update Idx: " + updateIdx);
-			if (longestLen < update.length() && updateIdx != 0) {
+			if (longestLen < update.length() && (updateIdx != 0 || i == indices.length-1)) {
 				//insertion, deletion, or modification exists here!
 				int oldIdx = old.indexOf(longest);
 				
@@ -243,15 +249,17 @@ public class RecurrentHasher {
 				try {
 					outputStream.write(Arrays.copyOfRange(fileArray, 0, start));
 					outputStream.write(updated);
-					outputStream.write(Arrays.copyOfRange(fileArray, end-difference, fileArray.length));
+					if (end-difference < fileArray.length)
+						outputStream.write(Arrays.copyOfRange(fileArray, end-difference, fileArray.length));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 				fileArray = outputStream.toByteArray();
-				System.out.println(update);
-				System.out.println(old);
-				System.out.println(difference);
-				//System.out.println(start);
+				//this.fileArraySize += difference;
+				System.out.println("File Index: "+start);
+				System.out.println("Update: "+update);
+				System.out.println("Old:    "+old);
+				System.out.println("Shift: "+difference);
 				allDone = false;
 				//need to start over now
 				JSONObject load = new JSONObject();

@@ -72,15 +72,14 @@ public class Main implements ClientFunctions, ServerFunctions {
 			//}
 			
 			//testing deletions fileArray
-			/*ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 			try {
-				outputStream.write(Arrays.copyOfRange(fileArray, 0, 2));
-				outputStream.write(new byte[] {'Q'});
-				outputStream.write(Arrays.copyOfRange(fileArray, 4, fileArray.length));
+				outputStream.write(Arrays.copyOfRange(fileArray, 0, 23423+5));
+				outputStream.write(Arrays.copyOfRange(fileArray, 23423, fileArray.length));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			fileArray = outputStream.toByteArray();*/
+			fileArray = outputStream.toByteArray();
 			//fileArray[80000000] = 'Q';
 		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length);
@@ -103,6 +102,11 @@ public class Main implements ClientFunctions, ServerFunctions {
 	public void clientOnHashData(JSONObject payload) {
 		//System.out.println("Server got packet from client. Responding with next packet");
 		int recurrence = payload.optInt("recurrence");
+		if (recurrence == 1) {
+			//System.out.println(payload);
+			int fileSize = payload.optInt("arraysize");
+			rh.fileArraySize = fileSize;
+		}
 		JSONArray indices = payload.optJSONArray("indices");
 		JSONArray data = payload.optJSONArray("data");
 
