@@ -20,6 +20,7 @@ public class RecurrentHasher {
 	MessageDigest md;
 	
 	boolean allDone = false;
+	public double p = 0;
 	
 	public RecurrentHasher(byte fileArray[], long fileArraySize) {
 		this.fileArray = fileArray;
@@ -34,21 +35,38 @@ public class RecurrentHasher {
 	
 	//computer 1 hashes the appropriate parts
 	//start should be recurrence 0, indices [0]
-	public JSONObject hashParts(int recurrence, int indices[]) {
+	public JSONObject hashParts(int recurrence, int indices[]) {	
 		recurrence++;
-		float p = Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)));
-		StringBuilder ps = new StringBuilder();
-		for (int i=0; i<20; i++) {
-			if (i <= p/5) {
-				ps.append("#");
-			} else {
-				ps.append(" ");
-			}
-		}
-		System.out.print("Client " + FRSocketServer.clientNum + ": [" + ps + "] " + p + "%\r");
-		
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
+		
+		if (indices.length > 0) {
+			double passProgress = Math.round((2*indices[0]*partLength/(double) fileArraySize)*100);
+			if (passProgress > p) {
+				p = passProgress;
+			}
+			StringBuilder ps = new StringBuilder();
+			for (int i=0; i<20; i++) {
+				if (i <= p/5) {
+					ps.append("#");
+				} else {
+					ps.append(" ");
+				}
+			}
+			System.out.print("Server: [" + ps + "] " + p + "%\r");
+		}
+		else {
+			p = 100;
+			StringBuilder ps = new StringBuilder();
+			for (int i=0; i<20; i++) {
+				if (i <= p/5) {
+					ps.append("#");
+				} else {
+					ps.append(" ");
+				}
+			}
+			System.out.print("Server: [" + ps + "] " + p + "%\r");
+		}
 		
 		JSONObject load = new JSONObject();
 		JSONObject payload = new JSONObject();
@@ -138,7 +156,7 @@ public class RecurrentHasher {
 			e.printStackTrace();
 		}
 		
-		//System.out.println(load);
+//		System.out.println(load);
 		return load;
 	}
 	
@@ -152,20 +170,37 @@ public class RecurrentHasher {
 	}
 	
 	public JSONObject compareParts(int recurrence, int indices[], String data[]) {
-		float p = Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)));
-		StringBuilder ps = new StringBuilder();
-		for (int i=0; i<20; i++) {
-			if (i <= p/5) {
-				ps.append("#");
-			} else {
-				ps.append(" ");
-			}
-		}
-		System.out.print("[" + ps + "] " + p + "%\r");
-		
 		
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
+		
+		if (indices.length > 0) {
+			double passProgress = Math.round((indices[0]*partLength/(double) fileArraySize)*100);
+			if (passProgress > p) {
+				p = passProgress;
+			}
+			StringBuilder ps = new StringBuilder();
+			for (int i=0; i<20; i++) {
+				if (i <= p/5) {
+					ps.append("#");
+				} else {
+					ps.append(" ");
+				}
+			}
+			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
+		}
+		else {
+			p = 100;
+			StringBuilder ps = new StringBuilder();
+			for (int i=0; i<20; i++) {
+				if (i <= p/5) {
+					ps.append("#");
+				} else {
+					ps.append(" ");
+				}
+			}
+			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
+		}
 		
 		JSONObject load = new JSONObject();
 		JSONObject response = new JSONObject();
@@ -187,6 +222,7 @@ public class RecurrentHasher {
 			md.reset();
 			
 			String hash = byteArrayToString(oldHashed);
+//			System.out.println("Data: "+data[i]);
 			
 			if (!hash.equals(data[i])) {
 				jsonIndices.put(indices[i]);
@@ -201,7 +237,7 @@ public class RecurrentHasher {
 			e.printStackTrace();
 		}
 		
-		//System.out.println(load);
+//		System.out.println(load);
 		return load;
 	}
 	
@@ -209,6 +245,34 @@ public class RecurrentHasher {
 	public JSONObject compareParts(int recurrence, int indices[], JSONArray data[]) {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
+		
+		if (indices.length > 0) {	
+			double passProgress = Math.round((indices[0]*partLength/(double) fileArraySize)*100);
+			if (passProgress > p) {
+				p = passProgress;
+			}
+			StringBuilder ps = new StringBuilder();
+			for (int i=0; i<20; i++) {
+				if (i <= p/5) {
+					ps.append("#");
+				} else {
+					ps.append(" ");
+				}
+			}
+			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
+		}
+		else {
+			p = 100;
+			StringBuilder ps = new StringBuilder();
+			for (int i=0; i<20; i++) {
+				if (i <= p/5) {
+					ps.append("#");
+				} else {
+					ps.append(" ");
+				}
+			}
+			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
+		}
 		
 		//there should be 2 or less indices at this point
 		//System.out.println("Number of indices: " + indices.length);
@@ -256,10 +320,10 @@ public class RecurrentHasher {
 				}
 				fileArray = outputStream.toByteArray();
 				//this.fileArraySize += difference;
-				System.out.println("File Index: "+start);
-				System.out.println("Update: "+update);
-				System.out.println("Old:    "+old);
-				System.out.println("Shift: "+difference);
+//				System.out.println("File Index: "+start);
+//				System.out.println("Update: "+update);
+//				System.out.println("Old:    "+old);
+//				System.out.println("Shift: "+difference);
 				allDone = false;
 				//need to start over now
 				JSONObject load = new JSONObject();
