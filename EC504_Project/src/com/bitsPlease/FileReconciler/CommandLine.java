@@ -30,7 +30,11 @@ public class CommandLine {
 				
 			
 			} else System.out.println("Include the IP of the recepient after the parameter -to");
-			System.out.println("Reconcile file " + fileName + " with computer " + ip);
+			if (ip == null) {
+				System.out.println("Reconcile file " + fileName + " with localhost");
+			} else {
+				System.out.println("Reconcile file " + fileName + " with computer " + ip);
+			}
 		} catch (org.apache.commons.cli.ParseException exp) {
 			System.out.println("Invalid expression: " + exp.getMessage());
 		}

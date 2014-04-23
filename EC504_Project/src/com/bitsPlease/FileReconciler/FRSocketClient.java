@@ -32,7 +32,7 @@ public class FRSocketClient extends SocketClient {
 	private boolean EstablishConnection() {
 	    try {    
 	    	this.s = new Socket(this.server, this.port);
-	    	this.streamIn = new DataInputStream(new BufferedInputStream(this.s.getInputStream()));
+	    	this.streamIn = new DataInputStream(new BufferedInputStream(this.s.getInputStream())); //new
 			this.streamOut = new DataOutputStream(this.s.getOutputStream());
 	    	return true;
 	    } catch (Exception e) {
@@ -59,6 +59,7 @@ public class FRSocketClient extends SocketClient {
 						JSONObject response;
 						try {
 							response = new JSONObject(line);
+							//System.out.println(line);
 							if (response.optString("opcode").equals(ClientOpcodes.hashResponse.name())) {
 								clientListener.clientOnHashResponse(response.optJSONObject("payload"));
 							}

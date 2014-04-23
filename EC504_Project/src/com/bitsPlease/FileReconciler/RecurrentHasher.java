@@ -32,6 +32,17 @@ public class RecurrentHasher {
 	//start should be recurrence 0, indices [0]
 	public JSONObject hashParts(int recurrence, int indices[]) {
 		recurrence++;
+		float p = Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)));
+		StringBuilder ps = new StringBuilder();
+		for (int i=0; i<20; i++) {
+			if (i <= p/5) {
+				ps.append("#");
+			} else {
+				ps.append(" ");
+			}
+		}
+		System.out.print("[" + ps + "] " + p + "%\r");
+		
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
@@ -56,7 +67,6 @@ public class RecurrentHasher {
 			
 			
 			for (int i = 0; i < indices.length; i++) {
-//				byte halfOne[] = Arrays.copyOfRange(fileArray, (int) (2*indices[i]*partLength), (int) (2*indices[i]*partLength + partLength));
 				for (int k = (int) (2*indices[i]*partLength); k <= (int) (2*indices[i]*partLength + partLength); k++) {
 					md.update(fileArray[k]);
 				}
@@ -110,7 +120,7 @@ public class RecurrentHasher {
 			e.printStackTrace();
 		}
 		
-		System.out.println(load);
+		//System.out.println(load);
 		return load;
 	}
 	
@@ -124,6 +134,18 @@ public class RecurrentHasher {
 	}
 	
 	public JSONObject compareParts(int recurrence, int indices[], String data[]) {
+		float p = Math.round(100*(recurrence/Math.ceil(Math.log(fileArray.length)/Math.log(2)-5)));
+		StringBuilder ps = new StringBuilder();
+		for (int i=0; i<20; i++) {
+			if (i <= p/5) {
+				ps.append("#");
+			} else {
+				ps.append(" ");
+			}
+		}
+		System.out.print("[" + ps + "] " + p + "%\r");
+		
+		
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
@@ -142,7 +164,7 @@ public class RecurrentHasher {
 		for (int i = 0; i < indices.length; i++) {
 			byte oldData[] = Arrays.copyOfRange(fileArray, (int) (indices[i]*partLength), (int) (indices[i]*partLength + partLength));
 			//DEBUG output
-			System.out.println(oldData.length);
+			//System.out.println(oldData.length);
 			
 			byte oldHashed[] = md.digest(oldData);
 			String hash = byteArrayToString(oldHashed);
@@ -159,7 +181,7 @@ public class RecurrentHasher {
 			e.printStackTrace();
 		}
 		
-		System.out.println(load);
+		//System.out.println(load);
 		return load;
 	}
 	
