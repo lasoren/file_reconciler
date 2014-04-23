@@ -12,7 +12,7 @@ public abstract class SocketClient extends Thread {
 	protected String server;
 	protected int port;
 	protected BlockingQueue<String> sendQueue;
-	protected BufferedReader streamIn;
+	protected DataInputStream streamIn;
 	protected DataOutputStream streamOut;
 	
 	SocketClient (String ipaddr, int port) {
