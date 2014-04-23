@@ -21,10 +21,15 @@ public class RecurrentHasher {
 	
 	boolean allDone = false;
 	public double p = 0;
+	int numtrials = 1;
+	int numfiles = 1;
+	int currentfile = 1;
 	
-	public RecurrentHasher(byte fileArray[], long fileArraySize) {
+	public RecurrentHasher(byte fileArray[], long fileArraySize, int numfiles, int currentfile) {
 		this.fileArray = fileArray;
 		this.fileArraySize = fileArraySize;
+		this.numfiles = numfiles;
+		this.currentfile = currentfile;
 		
 		try {
 			md = MessageDigest.getInstance("MD5");
@@ -41,7 +46,7 @@ public class RecurrentHasher {
 		double partLength = (fileArraySize/divisor);
 		
 		if (indices.length > 0) {
-			double passProgress = Math.round((2*indices[0]*partLength/(double) fileArraySize)*100);
+			double passProgress = ((currentfile-1)*100/numfiles) + Math.round((2*indices[0]*partLength/(double) fileArraySize)*100)/numfiles;
 			if (passProgress > p) {
 				p = passProgress;
 			}
@@ -53,7 +58,7 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("Server: [" + ps + "] " + p + "%\r");
+			System.out.print("Client #" + FRSocketServer.clientNum + ": file " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
 		}
 		else {
 			p = 100;
@@ -84,6 +89,7 @@ public class RecurrentHasher {
 		JSONArray jsonData = new JSONArray();
 		
 		if (partLength > HASH_LENGTH) {
+			
 			try {
 				load.put("opcode", ClientOpcodes.hashData.name());
 			} catch (JSONException e) {
@@ -169,13 +175,12 @@ public class RecurrentHasher {
 		return new String(out);
 	}
 	
-	public JSONObject compareParts(int recurrence, int indices[], String data[]) {
-		
+	public JSONObject compareParts(int recurrence, int indices[], String data[]) {	
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
 		if (indices.length > 0) {
-			double passProgress = Math.round((indices[0]*partLength/(double) fileArraySize)*100);
+			double passProgress = ((currentfile-1)*100/numfiles) +  Math.round((indices[0]*partLength/(double) fileArraySize)*100)/numfiles;
 			if (passProgress > p) {
 				p = passProgress;
 			}
@@ -187,7 +192,7 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
+			System.out.print("File " + currentfile + " of " + numfiles +" [" + ps + "] " + p + "%\r");
 		}
 		else {
 			p = 100;
@@ -246,34 +251,6 @@ public class RecurrentHasher {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
-		if (indices.length > 0) {	
-			double passProgress = Math.round((indices[0]*partLength/(double) fileArraySize)*100);
-			if (passProgress > p) {
-				p = passProgress;
-			}
-			StringBuilder ps = new StringBuilder();
-			for (int i=0; i<20; i++) {
-				if (i <= p/5) {
-					ps.append("#");
-				} else {
-					ps.append(" ");
-				}
-			}
-			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
-		}
-		else {
-			p = 100;
-			StringBuilder ps = new StringBuilder();
-			for (int i=0; i<20; i++) {
-				if (i <= p/5) {
-					ps.append("#");
-				} else {
-					ps.append(" ");
-				}
-			}
-			System.out.print("Client "+ FRSocketServer.clientNum+": [" + ps + "] " + p + "%\r");
-		}
-		
 		//there should be 2 or less indices at this point
 		//System.out.println("Number of indices: " + indices.length);
 		for (int i = 0; i < indices.length; i++) {
@@ -298,6 +275,7 @@ public class RecurrentHasher {
 			int longestLen = longest.length();
 			
 			int updateIdx = update.indexOf(longest);
+
 			//System.out.println("Update Idx: " + updateIdx);
 			if (longestLen < update.length() && (updateIdx != 0 || i == indices.length-1)) {
 				//insertion, deletion, or modification exists here!
@@ -320,12 +298,13 @@ public class RecurrentHasher {
 				}
 				fileArray = outputStream.toByteArray();
 				//this.fileArraySize += difference;
-//				System.out.println("File Index: "+start);
-//				System.out.println("Update: "+update);
-//				System.out.println("Old:    "+old);
-//				System.out.println("Shift: "+difference);
+				//System.out.println("File Index: "+start);
+				//System.out.println("Update: "+update);
+				//System.out.println("Old:    "+old);
+				//System.out.println("Shift: "+difference);
 				allDone = false;
 				//need to start over now
+				numtrials++;
 				JSONObject load = new JSONObject();
 				JSONObject response = new JSONObject();
 				
@@ -372,5 +351,18 @@ public class RecurrentHasher {
 	         }
 	    }
 	    return S1.substring(Start, (Start + Max));
+	}
+	
+	public void finishFileProgress() {
+		float p = (float) (100.0*((float)currentfile/numfiles));
+		StringBuilder ps = new StringBuilder();
+		for (int i=0; i<20; i++) {
+			if (i <= p/5) {
+				ps.append("#");
+			} else {
+				ps.append(" ");
+			}
+		}
+		System.out.print("File " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
 	}
 }

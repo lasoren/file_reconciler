@@ -102,6 +102,7 @@ public class FRSocketServer extends SocketClient {
 
 	@Override
 	public void close() {
+		this.processSendQueue();
 		try {
 			this.socket.close();
 		} catch (IOException e) {

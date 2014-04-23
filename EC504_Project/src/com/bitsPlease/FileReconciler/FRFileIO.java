@@ -60,6 +60,7 @@ public class FRFileIO {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			//PrintWriter writer = new PrintWriter("final.txt", "ASCII");
 			//for(int i = 0; i < b.length; i++){
             //System.out.println(new String(b, "ASCII"));
