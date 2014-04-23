@@ -14,12 +14,13 @@ import org.json.JSONObject;
 interface ServerFunctions {
 	 void serverOnHashData(JSONObject payload);
 	 void serverOnRawData(JSONObject payload);
+	 void serverOnDirectoryData(JSONObject payload);
 	 void serverOnError(String err);
 	 void serverOnConnect();
 }
 
 enum ServerOpcodes {
-	hashData, rawData
+	hashData, rawData, directoryData
 }
 
 public class FRSocketServer extends SocketClient {
@@ -68,6 +69,8 @@ public class FRSocketServer extends SocketClient {
 							serverListener.serverOnHashData(response.optJSONObject("payload"));
 						} else if (response.optString("opcode").equals(ServerOpcodes.rawData.name())) {
 							serverListener.serverOnRawData(response.optJSONObject("payload"));
+						} else if (response.optString("opcode").equals(ServerOpcodes.rawData.name())) {
+							serverListener.serverOnDirectoryData(response.optJSONObject("payload"));
 						}
 					} catch (JSONException e) {
 						this.serverListener.serverOnError("Error parsing response");

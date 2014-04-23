@@ -12,6 +12,7 @@ import org.json.JSONObject;
 interface ClientFunctions {
 	 void clientOnHashResponse(JSONObject payload);
 	 void clientOnConnect();
+	 void clientOnDirectoryData(JSONObject payload);
 	 void clientOnError(String err);
 }
 
