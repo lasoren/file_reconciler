@@ -12,22 +12,26 @@ import org.json.JSONObject;
 
 
 interface ServerFunctions {
-	 void serverOnHashData(JSONObject payload);
-	 void serverOnRawData(JSONObject payload);
-	 void serverOnDirectoryData(JSONObject payload);
-	 void serverOnError(String err);
+	 void serverOnHashResponse(JSONObject payload);
 	 void serverOnConnect();
+	 void serverOnError(String msg, ServerErrors code);
+	 void serverOnDirectoryData(JSONObject payload);
 }
 
 enum ServerOpcodes {
-	hashData, rawData, directoryData
+   hashResponse, clientDone, directoryData
 }
+
+enum ServerErrors {
+	   errRead, errSend, errParse, errClose, errListen
+	}
 
 public class FRSocketServer extends SocketClient {
 	
 	private ServerFunctions serverListener;
-	private ServerSocket serv;
+	private ServerSocket serv = null;
 	private Socket socket;
+	public static int clientNum = 1;
 	
 	FRSocketServer (String ipaddr, int port, ServerFunctions mainThread) {
 		super(ipaddr, port);
@@ -35,14 +39,15 @@ public class FRSocketServer extends SocketClient {
 	}
 	
 	private boolean ListenForConnection() {
-	    try {    
-	    	this.serv = new ServerSocket(this.port);
+	    try {
+	    	if (this.serv == null) {
+	    		this.serv = new ServerSocket(this.port);
+	    	}
 	    	this.socket = this.serv.accept();
 			this.streamOut = new DataOutputStream(socket.getOutputStream());
 	        this.streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream())); //new
 	    	return true;
 	    } catch (Exception e) {
-	    	this.serverListener.serverOnError("Unable to listen for connection");
 	    	return false;
 	    }
 	}
@@ -51,7 +56,7 @@ public class FRSocketServer extends SocketClient {
     	boolean connect = this.ListenForConnection();
     	
     	if (!connect) {
-    		this.serverListener.serverOnError("Error listening");
+    		this.serverListener.serverOnError("Error listening", ServerErrors.errListen);
     		return;
     	}
     	
@@ -65,24 +70,40 @@ public class FRSocketServer extends SocketClient {
     				JSONObject response;
 					try {
 						response = new JSONObject(line);
-						if (response.optString("opcode").equals(ServerOpcodes.hashData.name())) {
-							serverListener.serverOnHashData(response.optJSONObject("payload"));
-						} else if (response.optString("opcode").equals(ServerOpcodes.rawData.name())) {
-							serverListener.serverOnRawData(response.optJSONObject("payload"));
+						if (response.optString("opcode").equals(ServerOpcodes.hashResponse.name())) {
+							serverListener.serverOnHashResponse(response.optJSONObject("payload"));
+						} else if (response.optString("opcode").equals(ServerOpcodes.clientDone.name())) {
+					    	connect = this.ListenForConnection();
+					    	
+					    	if (!connect) {
+					    		this.serverListener.serverOnError("Error listening", ServerErrors.errListen);
+					    		return;
+					    	}
+					    	clientNum++;
+					    	serverListener.serverOnConnect();
 						} else if (response.optString("opcode").equals(ServerOpcodes.rawData.name())) {
 							serverListener.serverOnDirectoryData(response.optJSONObject("payload"));
-						}
+  						}
 					} catch (JSONException e) {
-						this.serverListener.serverOnError("Error parsing response");
+						this.serverListener.serverOnError("Error parsing response", ServerErrors.errParse);
 					}
     			}
     		} catch(IOException e) { 
-    			this.serverListener.serverOnError("Error reading packet");
+    			this.serverListener.serverOnError("Error reading packet", ServerErrors.errRead);
     		}
     		if (!this.processSendQueue()) {
-    			this.serverListener.serverOnError("Error sending packets");
+    			this.serverListener.serverOnError("Error sending packets", ServerErrors.errSend);
     		}
     	}
-    }	
+    }
+
+	@Override
+	public void close() {
+		try {
+			this.socket.close();
+		} catch (IOException e) {
+			this.serverListener.serverOnError("Error closing socket", ServerErrors.errClose);
+		}
+	}	
 }
 

@@ -34,19 +34,20 @@ public class Main implements ClientFunctions, ServerFunctions {
 		if(folder.isDirectory()){
 			thisIsDirectory = true;
 		}
-
-		if (args[0].equals("client")) {
-			Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main(CommandLine.getName(), true, thisIsDirectory));
-			Main.r.start();
-		} else if (args[0].equals("server")){
-			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, new Main(CommandLine.getName(), false, thisIsDirectory));
-			Main.r.start();
-		} else {
-			System.out.println("Error");
+		try {
+			CommandLine.check(args);
+		} catch (Exception e) {
+			System.exit(0);
 		}
+		Main.r = new FRSocketClient(CommandLine.getIP(), 42069, new Main(CommandLine.getName(), true));
+		Main.r.start();
 	}
 	
 	Main(String fileName, boolean client, boolean isDirectory) {
+		StartRecurrentHashing(fileName, client);
+	}
+
+	private void StartRecurrentHashing(String fileName, boolean client) {
 		this.fileArray = FRFileIO.readIn(fileName);
 		File folder = new File(fileName);
 		this.file = folder;
@@ -58,6 +59,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 //			fileArray[80000000] = 'Q';
 //			fileArray[2232344] = 'Q';
 //			fileArray[1337] = 'F';
+			//}
 			
 			//testing deletions fileArray
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
@@ -75,7 +77,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	}
 
 	@Override
-	public void clientOnHashResponse(JSONObject payload) {
+	public void serverOnHashResponse(JSONObject payload) {
 		//System.out.println("Client got server's response, sending final response to server");
 		int recurrence = payload.optInt("recurrence");
 		JSONArray indices = payload.optJSONArray("indices");
@@ -88,7 +90,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	}
 
 	@Override
-	public void serverOnHashData(JSONObject payload) {
+	public void clientOnHashData(JSONObject payload) {
 		//System.out.println("Server got packet from client. Responding with next packet");
 		int recurrence = payload.optInt("recurrence");
 		JSONArray indices = payload.optJSONArray("indices");
@@ -110,7 +112,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	}
 
 	@Override
-	public void serverOnRawData(JSONObject payload) {
+	public void clientOnRawData(JSONObject payload) {
 		//System.out.println("Server received raw data packet from client!");
 		int recurrence = payload.optInt("recurrence");
 		JSONArray indices = payload.optJSONArray("indices");
@@ -130,8 +132,16 @@ public class Main implements ClientFunctions, ServerFunctions {
 		if (packet == null) {
 			//System.out.println("Reconciled!");		
 			FRFileIO.writeOut(this.fileArray, "out.txt");
+			try {
+				packet = new JSONObject();
+				packet.put("opcode", ServerOpcodes.clientDone.name());
+				Main.r.send(packet.toString());
+			} catch (Exception e) {
+				clientOnError("Error forming packet", ClientErrors.errForm);
+			}
 		} else {
 			Main.r.send(packet.toString());
+			Main.r.close();
 		}
 		
 	}
@@ -225,12 +235,10 @@ public class Main implements ClientFunctions, ServerFunctions {
 	@Override
 	public void clientOnDirectoryData(JSONObject payload){
 		JSONArray fileArray = payload.optJSONArray("data");
-		
 	}
-	
+
 	@Override
-	public void clientOnConnect() {
-		
+	public void serverOnConnect() {	
 		if(this.isDirectory){
 			
 			JSONObject packet = directoryList();
@@ -244,17 +252,24 @@ public class Main implements ClientFunctions, ServerFunctions {
 	}
 	
 	@Override
-	public void serverOnConnect() {
-		System.out.println("Connected to client!");
+	public void clientOnConnect() {
+		System.out.println("Connected to server!");
 	}
 
 	@Override
-	public void serverOnError(String err) {
-		//System.out.println("Error: " + err);
+	public void serverOnError(String msg, ServerErrors code) {
+		System.out.println("Server error: " + msg);
 	}
 
 	@Override
-	public void clientOnError(String err) {
-		//System.out.println("Error: " + err);	
+	public void clientOnError(String msg, ClientErrors code) {
+		if (code == ClientErrors.errNoHost) {
+			System.out.println("Listening for connection since no open host found");
+			StartRecurrentHashing(CommandLine.getName(), false);
+			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, this);
+			Main.r.start();
+		} else {
+			System.out.println("Client error: " + msg);
+		}
 	}
 }

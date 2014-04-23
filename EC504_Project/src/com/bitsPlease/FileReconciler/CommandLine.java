@@ -7,7 +7,6 @@ public class CommandLine {
 	
 	static String fileName;
 	static String ip;
-	static String also;
 
 	public static void check(String[] args) throws Exception {
 
@@ -33,13 +32,6 @@ public class CommandLine {
 				System.out.println("Include the IP of the recepient after the parameter -to");
 				throw new Exception("Did not receive host argument");
 			}
-			
-			if (line.hasOption("also")) {
-				also = line.getOptionValue("also");
-				System.out.println("Reconcile file " + fileName + " with " + ip + " and " + also);
-			} else {
-				System.out.println("Reconcile file " + fileName + " with " + ip);
-			}
 		} catch (org.apache.commons.cli.ParseException exp) {
 			System.out.println("Invalid expression: " + exp.getMessage());
 		}
@@ -53,5 +45,4 @@ public class CommandLine {
 	public static String getIP() {
 		return ip;
 	}
-
 }
