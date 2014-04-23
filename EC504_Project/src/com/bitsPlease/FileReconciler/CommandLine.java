@@ -7,12 +7,14 @@ public class CommandLine {
 	
 	static String fileName;
 	static String ip;
+	static String also;
 
 	public static void check(String[] args) {
 
 		Options opt = new Options();
 		opt.addOption("file", true, "the file name");
 		opt.addOption("to", true, "the address");
+		opt.addOption("also", true, "an additional address");
 		
 		try {
 			org.apache.commons.cli.CommandLine line = new BasicParser().parse(opt, args);
@@ -23,13 +25,12 @@ public class CommandLine {
 			} else System.out.println("Include the file name after the parameter -file");
 			
 			if (line.hasOption("to")){
-				
 				ip = line.getOptionValue("to");
-				// Do the magic
-				// The example to check the parameters
-				
-			
 			} else System.out.println("Include the IP of the recepient after the parameter -to");
+			
+			if (line.hasOption("also")) {
+				also = line.getOptionValue("also");
+			}
 			if (ip == null) {
 				System.out.println("Reconcile file " + fileName + " with localhost");
 			} else {
