@@ -65,7 +65,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 		if (!client) {
 			fileArray[fileArray.length-10] = 'Q';
 			//fileArray[53223423] = 'Q';
-			fileArray[23423] = 'Q';
+			fileArray[100] = 'Q';
 			fileArray[80000000] = 'Q';
 			fileArray[2232344] = 'Q';
 			fileArray[2] = 'F';
@@ -244,7 +244,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 			}
 		}
 		String cfn = q.poll();
-		StartRecurrentHashing(cfn, this.client, false);
+		StartRecurrentHashing(cfn, false, false);
 		
 		JSONObject packet = new JSONObject();
 		JSONObject newpayload = new JSONObject();
@@ -307,6 +307,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 			if (!isDirectory) {
 				StartRecurrentHashing(CommandLine.getName(), false, this.isDirectory);
 			}
+			this.client = false;
 			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, this);
 			Main.r.start();
 		} else {
