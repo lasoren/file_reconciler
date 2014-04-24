@@ -1,9 +1,9 @@
 package com.bitsPlease.FileReconciler;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -15,6 +15,7 @@ public abstract class SocketClient extends Thread {
 	protected DataInputStream streamIn;
 	protected DataOutputStream streamOut;
 	protected int bytes = 0;
+	protected DecimalFormat numberFormat = new DecimalFormat("#.00");
 	
 	SocketClient (String ipaddr, int port) {
 		this.server = ipaddr;
@@ -32,7 +33,7 @@ public abstract class SocketClient extends Thread {
         		String packet = this.sendQueue.poll();
                 streamOut.writeUTF(packet);
                 streamOut.flush();
-                bytes = bytes + packet.length();
+                bytes += packet.getBytes("UTF-8").length;
         	} catch (IOException e) {
         		return false;
         	}

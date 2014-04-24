@@ -67,6 +67,7 @@ public class FRSocketServer extends SocketClient {
     		try {
     			if (streamIn.available() != 0) {
     				String line = streamIn.readUTF();
+    				bytes += line.getBytes("UTF-8").length;
     				//System.out.println(line);
     				JSONObject response;
 					try {

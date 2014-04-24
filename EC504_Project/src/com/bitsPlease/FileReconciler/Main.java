@@ -29,6 +29,8 @@ public class Main implements ClientFunctions, ServerFunctions {
 	int numfiles = 1;
 	int currentfile = 0;
 	
+	public static int FINAL_SEND_LEN = 46;
+	
 	public static void main(String args[]) {
 		try {
 			CommandLine.check(args);
@@ -337,6 +339,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	@Override
 	public void serverOnFileDone() {
 		if (!q.isEmpty()) {
+			System.out.println("Total bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
 			this.currentfile++;
 			String fn = q.poll();
 			StartRecurrentHashing(fn, false, false);
@@ -353,6 +356,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 			JSONObject packet2 = rh.hashParts(0, new int[] {0});
 			Main.r.send(packet2.toString());
 		} else {
+			System.out.println("Total bytes transmitted (sent and recieved): "+Main.r.numberFormat.format(((Main.r.bytes+FINAL_SEND_LEN)/1024.0))+" kB");
 			try {
 				JSONObject packet = new JSONObject();
 				packet.put("opcode", ClientOpcodes.clientDone.name());

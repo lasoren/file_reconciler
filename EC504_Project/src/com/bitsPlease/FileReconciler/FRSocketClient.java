@@ -62,6 +62,7 @@ public class FRSocketClient extends SocketClient {
         	try {
 				if (streamIn.available() != 0) {
 						line = streamIn.readUTF();
+						bytes += line.getBytes("UTF-8").length;
 						JSONObject response;
 						try {
 							response = new JSONObject(line);
@@ -79,6 +80,7 @@ public class FRSocketClient extends SocketClient {
 								packet.put("opcode", ServerOpcodes.clientDone.name());
 								send(packet.toString());
 								close();
+								System.out.println("Total bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
 								break;
 							}
 						} catch (JSONException e) {
