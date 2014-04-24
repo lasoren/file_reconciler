@@ -20,7 +20,7 @@ interface ClientFunctions {
 }
 
 enum ClientOpcodes {
-	hashData, rawData, directoryData, startFile, clientDone
+	hashData, rawData, directoryData, startFile, clientDone, clientDoneEarly
 }
 enum ClientErrors {
 	errNoHost, errSend, errParse, errRead, errForm, errClose
@@ -75,11 +75,14 @@ public class FRSocketClient extends SocketClient {
 								clientListener.clientOnDirectoryData(response.optJSONObject("payload"));
 							} else if (response.optString("opcode").equals(ClientOpcodes.startFile.name())) {
 								clientListener.clientOnStartFile(response.optJSONObject("payload"));
-							} else if (response.optString("opcode").equals(ClientOpcodes.clientDone.name())) {
+							} else if (response.optString("opcode").equals(ClientOpcodes.clientDone.name()) || response.optString("opcode").equals(ClientOpcodes.clientDoneEarly.name())) {
 								JSONObject packet = new JSONObject();
 								packet.put("opcode", ServerOpcodes.clientDone.name());
 								send(packet.toString());
 								close();
+								if (response.optString("opcode").equals(ClientOpcodes.clientDoneEarly.name())) {
+									System.out.print("No files in common to reconcile!");
+								}
 								System.out.println("\nTotal bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
 								break;
 							}

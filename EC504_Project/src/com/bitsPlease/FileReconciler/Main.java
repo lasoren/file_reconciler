@@ -289,29 +289,40 @@ public class Main implements ClientFunctions, ServerFunctions {
 				e.printStackTrace();
 			}
 		}
-		this.numfiles = q.size();
-		String cfn = q.poll();
-		this.currentfile++;
-		StartRecurrentHashing(cfn, false, false);
-		
-		JSONObject packet = new JSONObject();
-		JSONObject newpayload = new JSONObject();
-		try {
-			newpayload.put("filename", cfn);
-			newpayload.put("numfiles", numfiles);
-		} catch (JSONException e1) {
-			e1.printStackTrace();
+		if (q.isEmpty()) {
+			System.out.print("No files in common to reconcile!");
+			JSONObject load = new JSONObject();
+			try {
+				load.put("opcode", ClientOpcodes.clientDoneEarly);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Main.r.send(load.toString());
+		} else {
+			this.numfiles = q.size();
+			String cfn = q.poll();
+			this.currentfile++;
+			StartRecurrentHashing(cfn, false, false);
+			
+			JSONObject packet = new JSONObject();
+			JSONObject newpayload = new JSONObject();
+			try {
+				newpayload.put("filename", cfn);
+				newpayload.put("numfiles", numfiles);
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+			try {
+				packet.put("opcode", ClientOpcodes.startFile);
+				packet.put("payload", newpayload);
+				Main.r.send(packet.toString());
+				JSONObject senddata = rh.hashParts(0, new int[] {0});
+				Main.r.send(senddata.toString());
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
-		try {
-			packet.put("opcode", ClientOpcodes.startFile);
-			packet.put("payload", newpayload);
-			Main.r.send(packet.toString());
-			JSONObject senddata = rh.hashParts(0, new int[] {0});
-			Main.r.send(senddata.toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
 
 	}
 	
@@ -359,7 +370,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 				StartRecurrentHashing(CommandLine.getName(), false, this.isDirectory);
 			}
 			this.client = false;
-			Main.r = new FRSocketServer(CommandLine.getIP(), 42069, this);
+			Main.r = new FRSocketServer("localhost", 42069, this);
 			Main.r.start();
 		} else {
 			System.out.println("Client error: " + msg);
