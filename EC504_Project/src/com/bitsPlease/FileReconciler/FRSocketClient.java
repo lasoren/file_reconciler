@@ -79,6 +79,7 @@ public class FRSocketClient extends SocketClient {
 								packet.put("opcode", ServerOpcodes.clientDone.name());
 								send(packet.toString());
 								close();
+								System.out.println("\n");
 								break;
 							}
 						} catch (JSONException e) {

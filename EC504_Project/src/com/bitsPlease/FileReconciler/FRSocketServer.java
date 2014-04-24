@@ -74,6 +74,7 @@ public class FRSocketServer extends SocketClient {
 						if (response.optString("opcode").equals(ServerOpcodes.hashResponse.name())) {
 							serverListener.serverOnHashResponse(response.optJSONObject("payload"));
 						} else if (response.optString("opcode").equals(ServerOpcodes.clientDone.name())) {
+							System.out.println("\n");
 							connect = this.ListenForConnection();
 					    	
 					    	if (!connect) {

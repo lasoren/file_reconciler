@@ -24,12 +24,14 @@ public class RecurrentHasher {
 	int numtrials = 1;
 	int numfiles = 1;
 	int currentfile = 1;
+	String currentFileName;
 	
-	public RecurrentHasher(byte fileArray[], long fileArraySize, int numfiles, int currentfile) {
+	public RecurrentHasher(byte fileArray[], long fileArraySize, int numfiles, int currentfile, String currentFileName) {
 		this.fileArray = fileArray;
 		this.fileArraySize = fileArraySize;
 		this.numfiles = numfiles;
 		this.currentfile = currentfile;
+		this.currentFileName = currentFileName;
 		
 		try {
 			md = MessageDigest.getInstance("MD5");
@@ -58,7 +60,7 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("Client #" + FRSocketServer.clientNum + ": file " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
+			System.out.print("Client #" + FRSocketServer.clientNum + ": \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + p + "%\r");
 		}
 		else {
 			p = 100*((float)currentfile/numfiles);
@@ -70,7 +72,7 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("Client #" + FRSocketServer.clientNum + ": file " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
+			System.out.print("Client #" + FRSocketServer.clientNum + ": \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + p + "%\r");
 		}
 		
 		JSONObject load = new JSONObject();
@@ -192,7 +194,7 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("File " + currentfile + " of " + numfiles +" [" + ps + "] " + p + "%\r");
+			System.out.print("File \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles +") [" + ps + "] " + p + "%\r");
 		}
 		
 		JSONObject load = new JSONObject();
@@ -351,6 +353,6 @@ public class RecurrentHasher {
 				ps.append(" ");
 			}
 		}
-		System.out.print("File " + currentfile + " of " + numfiles + " [" + ps + "] " + p + "%\r");
+		System.out.print("File \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + p + "%\r");
 	}
 }

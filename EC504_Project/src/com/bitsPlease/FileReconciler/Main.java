@@ -57,6 +57,10 @@ public class Main implements ClientFunctions, ServerFunctions {
 			this.currentfile++;
 		}
 		File folder = new File(fileName);
+		if (!folder.exists()) {
+			System.out.println("File or folder not found!");
+			System.exit(0);
+		}
 		this.file = folder;
 		if (!isDirectory) {
 			StartRecurrentHashing(fileName, client, isDirectory);
@@ -65,9 +69,16 @@ public class Main implements ClientFunctions, ServerFunctions {
 
 	private void StartRecurrentHashing(String fileName, boolean client, boolean isDirectory) {
 		//this.isDirectory = isDirectory;
-		this.fileArray = FRFileIO.readIn(fileName);
-		this.client = client;
 		this.currentFileName = fileName;
+		String fn;
+		if (file.isDirectory()) {
+			fn = file.getAbsolutePath() + "/" + this.currentFileName;
+		} else {
+			fn = file.getAbsolutePath();
+		}
+		this.fileArray = FRFileIO.readIn(fn);
+		this.client = client;
+
 
 		if (!client) {
 			//fileArray[fileArray.length-10] = 'Q';
@@ -89,7 +100,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 			fileArray = outputStream.toByteArray();
 			fileArray[80000000] = 'Q';
 		}
-		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length, this.numfiles, this.currentfile);
+		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length, this.numfiles, this.currentfile, this.currentFileName);
 	}
 
 	@Override
