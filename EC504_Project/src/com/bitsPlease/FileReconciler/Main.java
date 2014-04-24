@@ -104,11 +104,14 @@ public class Main implements ClientFunctions, ServerFunctions {
 //			fileArray = outputStream.toByteArray();
 //			fileArray[80000000] = 'Q';
 //		}
-		String printname;
+		String printname = null;
 		if (file.isDirectory()) {
 			printname = this.currentFileName;
 		} else {
 			printname = file.getName();
+		}
+		if (printname == null) {
+			printname = fileName;
 		}
 		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length, this.numfiles, this.currentfile, printname);
 	}
