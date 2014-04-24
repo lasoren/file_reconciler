@@ -102,7 +102,13 @@ public class Main implements ClientFunctions, ServerFunctions {
 //			fileArray = outputStream.toByteArray();
 //			fileArray[80000000] = 'Q';
 //		}
-		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length, this.numfiles, this.currentfile, this.currentFileName);
+		String printname;
+		if (isDirectory) {
+			printname = this.currentFileName;
+		} else {
+			printname = file.getName();
+		}
+		this.rh = new RecurrentHasher(this.fileArray, this.fileArray.length, this.numfiles, this.currentfile, printname);
 	}
 
 	@Override
