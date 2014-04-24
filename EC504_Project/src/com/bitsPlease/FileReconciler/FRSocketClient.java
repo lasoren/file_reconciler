@@ -80,7 +80,7 @@ public class FRSocketClient extends SocketClient {
 								packet.put("opcode", ServerOpcodes.clientDone.name());
 								send(packet.toString());
 								close();
-								System.out.println("Total bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
+								System.out.println("\nTotal bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
 								break;
 							}
 						} catch (JSONException e) {
