@@ -8,6 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -103,7 +105,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 //			fileArray[80000000] = 'Q';
 //		}
 		String printname;
-		if (isDirectory) {
+		if (file.isDirectory()) {
 			printname = this.currentFileName;
 		} else {
 			printname = file.getName();
@@ -196,10 +198,17 @@ public class Main implements ClientFunctions, ServerFunctions {
 		
 		JSONArray fileArray = payload.optJSONArray("data");
 		List<String> finalFileList = new ArrayList<String>();
+		List<String> candidates = new ArrayList<String>();
 		Collection<File> inputFiles = FileUtils.listFiles(this.file,
-                new String[] {"txt" }, true);
+				TrueFileFilter.INSTANCE, DirectoryFileFilter.DIRECTORY);
 		
-	    for (File elem : inputFiles) {
+		String fn;
+		for (File elem : inputFiles) {
+			fn = elem.getAbsolutePath();
+			fn = fn.replace(file.getPath() + "/", "");
+			candidates.add(fn);
+		}
+		
 	    	for (int i = 0; i < fileArray.length(); i++) {
 	    		String jsonFile = null;
 	    		  try {
@@ -208,11 +217,10 @@ public class Main implements ClientFunctions, ServerFunctions {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-	    		if(jsonFile.equals(elem.getName())){
+	    		if(candidates.contains(jsonFile)){
 	    			finalFileList.add(jsonFile);
 	    		}  
 	    	}
-	    }
 	    
 	    
 	    JSONObject load = new JSONObject();
@@ -242,11 +250,13 @@ public class Main implements ClientFunctions, ServerFunctions {
 		JSONObject payload = new JSONObject();
 		JSONArray jsonData = new JSONArray();
 		Collection<File> inputFiles = FileUtils.listFiles(this.file,
-                new String[] {"txt" }, true);
+				 TrueFileFilter.INSTANCE, DirectoryFileFilter.DIRECTORY);
 		
-		
+		String fn;
 		for (File elem : inputFiles) {
-			jsonData.put(elem.getName());
+			fn = elem.getAbsolutePath();
+			fn = fn.replace(file.getPath() + "/", "");
+			jsonData.put(fn);
 		}
 		
 		try {

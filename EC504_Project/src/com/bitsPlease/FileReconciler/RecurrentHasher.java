@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import org.json.JSONArray;
@@ -48,7 +49,7 @@ public class RecurrentHasher {
 		double partLength = (fileArraySize/divisor);
 		
 		if (indices.length > 0) {
-			double passProgress = ((currentfile-1)*100/numfiles) + Math.round((2*indices[0]*partLength/(double) fileArraySize)*100)/numfiles;
+			double passProgress = ((currentfile-1)*100/numfiles) + Math.round((2*indices[0]*partLength/(double) fileArraySize)*100/numfiles);
 			if (passProgress > p) {
 				p = passProgress;
 			}
@@ -60,7 +61,8 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("Client #" + FRSocketServer.clientNum + ": \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + p + "%\r");
+			DecimalFormat twoDForm = new DecimalFormat("0.00");
+			System.out.print("Client #" + FRSocketServer.clientNum + ": \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + twoDForm.format(p) + "%\r");
 		}
 		else {
 			p = 100*((float)currentfile/numfiles);
@@ -72,7 +74,8 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("Client #" + FRSocketServer.clientNum + ": \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + p + "%\r");
+			DecimalFormat twoDForm = new DecimalFormat("0.00");
+			System.out.print("Client #" + FRSocketServer.clientNum + ": \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + twoDForm.format(p) + "%\r");
 		}
 		
 		JSONObject load = new JSONObject();
@@ -182,7 +185,7 @@ public class RecurrentHasher {
 		double partLength = (fileArraySize/divisor);
 		
 		if (indices.length > 0) {
-			double passProgress = ((currentfile-1)*100/numfiles) +  Math.round((indices[0]*partLength/(double) fileArraySize)*100)/numfiles;
+			double passProgress = ((currentfile-1)*100/numfiles) +  Math.round((indices[0]*partLength/(double) fileArraySize)*100/numfiles);
 			if (passProgress > p) {
 				p = passProgress;
 			}
@@ -194,7 +197,8 @@ public class RecurrentHasher {
 					ps.append(" ");
 				}
 			}
-			System.out.print("File \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles +") [" + ps + "] " + p + "%\r");
+			DecimalFormat twoDForm = new DecimalFormat("0.00");
+			System.out.print("File \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles +") [" + ps + "] " + twoDForm.format(p) + "%\r");
 		}
 		
 		JSONObject load = new JSONObject();
@@ -353,6 +357,7 @@ public class RecurrentHasher {
 				ps.append(" ");
 			}
 		}
-		System.out.print("File \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + p + "%\r");
+		DecimalFormat twoDForm = new DecimalFormat("0.00");
+		System.out.print("File \"" + this.currentFileName + "\" (" + currentfile + " of " + numfiles + ") [" + ps + "] " + twoDForm.format(p) + "%\r");
 	}
 }
