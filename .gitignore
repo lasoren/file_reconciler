@@ -1,4 +1,6 @@
 *.classpath
 **/bin
 *.class
-out.txt
+.DS_Store
+.class
+*/bin

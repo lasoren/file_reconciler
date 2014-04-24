@@ -31,11 +31,11 @@ public class FRFileIO {
             fileInputStream.close();
             
         } catch (FileNotFoundException e) {
-            System.out.println("File Not Found.");
+            System.out.println("File not found");
             e.printStackTrace();
         }
         catch (IOException e1) {
-            System.out.println("Error Reading The File.");
+            System.out.println("Error reading the file");
             e1.printStackTrace();
         }
         return b;

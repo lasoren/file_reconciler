@@ -7,7 +7,7 @@ public class TestRecurrentHasher {
 	static byte fileArray[] = {'a','b','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','c','d','e','f','g','h','i','r','r'};
 	
 	public static void main(String args[]) {
-		RecurrentHasher rh = new RecurrentHasher(fileArray, fileArray.length, 1, 1);
+		RecurrentHasher rh = new RecurrentHasher(fileArray, fileArray.length, 1, 1, "");
 		
 		System.out.println(rh.fileArraySize);
 		rh.hashParts(0, new int[] {0});

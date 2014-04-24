@@ -22,18 +22,21 @@ public class CommandLine {
 				fileName = line.getOptionValue("file");
 
 			} else {
-				System.out.println("Include the file name after the parameter -file");
-				throw new Exception("Did not receive file argument");
+				System.out.println("You must include the file name after the parameter -file");
+				System.exit(0);
+				//throw new Exception("Did not receive file argument");
 			}
 			
 			if (line.hasOption("to")){
 				ip = line.getOptionValue("to");
 			} else {
 				System.out.println("Include the IP of the recepient after the parameter -to");
-				throw new Exception("Did not receive host argument");
+				System.exit(0);
+				//throw new Exception("Did not receive host argument");
 			}
 		} catch (org.apache.commons.cli.ParseException exp) {
 			System.out.println("Invalid expression: " + exp.getMessage());
+			System.exit(0);
 		}
 		
 	}
