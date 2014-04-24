@@ -366,7 +366,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	@Override
 	public void serverOnFileDone() {
 		if (!q.isEmpty()) {
-			System.out.println("\nTotal bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
+			//System.out.println("\nTotal bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
 			this.currentfile++;
 			String fn = q.poll();
 			StartRecurrentHashing(fn, false, false);
