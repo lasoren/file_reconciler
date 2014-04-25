@@ -318,7 +318,7 @@ public class RecurrentHasher {
 			int updateIdx = update.indexOf(longest);
 
 			//System.out.println("Update Idx: " + updateIdx);
-			if (longestLen < update.length() && (updateIdx != 0 || i == indices.length-1)) {
+			if ((updateIdx != 0 || i == indices.length-1)) { //longestLen < update.length() && 
 				//insertion, deletion, or modification exists here!
 				int oldIdx = old.indexOf(longest);
 				
