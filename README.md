@@ -25,7 +25,7 @@ Run command on ALL machines to be reconciled.
 
 To reconcile a file between any number of computers or on a local machine:
 
-        reconcile -file [full filepath] -to [IP or localhost]
+        reconcile -file [filepath] -to [IP or localhost]
         
 To reconcile a directory between any number of computers or on a local machine:
 
