@@ -25,11 +25,11 @@ Run command on ALL machines to be reconciled.
 
 To reconcile a file between any number of computers or on a local machine:
 
-        reconcile -file [filepath] -to [IP or localhost]
+        reconcile -file [full filepath] -to [IP or localhost]
         
 To reconcile a directory between any number of computers or on a local machine:
 
-        reconcile -file [directory path] -to [IP or localhost]
+        reconcile -file [full directory path] -to [IP or localhost]
         
 The computer with the most up-to-date files should run the reconcile program FIRST. As many desired clients can then connect to this computer to reconcile files or directories of files.
 
