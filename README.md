@@ -3,6 +3,8 @@ file_reconciler
 
 Advanced Data Structures (ENG EC504 at Boston University) final project to reconcile arbitrary files between computers over the air with maximal efficiency and minimal bandwidth. 
 
+Built by John Moore, Luke Sorenson, Alexandrea Mellen, and Artem Losev
+
 ## Features
 
 Reconcile (make the same, restore discrepancies) any number of arbitrary files (text or binary) between computers. 
