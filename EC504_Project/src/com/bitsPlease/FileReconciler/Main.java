@@ -21,6 +21,7 @@ import java.util.Queue;
 public class Main implements ClientFunctions, ServerFunctions {
 
 	static SocketClient r;
+	//where the file is stored
 	byte fileArray[];
 	RecurrentHasher rh;
 	boolean isDirectory;
@@ -30,6 +31,9 @@ public class Main implements ClientFunctions, ServerFunctions {
 	String currentFileName;
 	int numfiles = 1;
 	int currentfile = 0;
+	
+	long startTime = System.currentTimeMillis();
+	long endTime = System.currentTimeMillis();
 	
 	public static int FINAL_SEND_LEN = 46;
 	
@@ -137,6 +141,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 			//System.out.println(payload);
 			int fileSize = payload.optInt("arraysize");
 			rh.fileArraySize = fileSize;
+			rh.fileArray = Arrays.copyOfRange(rh.fileArray, 0, fileSize);
 		}
 		JSONArray indices = payload.optJSONArray("indices");
 		JSONArray data = payload.optJSONArray("data");
@@ -160,6 +165,12 @@ public class Main implements ClientFunctions, ServerFunctions {
 	public void clientOnRawData(JSONObject payload) {
 		//System.out.println("Server received raw data packet from client!");
 		int recurrence = payload.optInt("recurrence");
+		if (recurrence == 1) {
+			//System.out.println(payload);
+			int fileSize = payload.optInt("arraysize");
+			rh.fileArraySize = fileSize;
+			rh.fileArray = Arrays.copyOfRange(rh.fileArray, 0, fileSize);
+		}
 		JSONArray indices = payload.optJSONArray("indices");
 		JSONArray data = payload.optJSONArray("data");
 
@@ -340,6 +351,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 	@Override
 	public void serverOnConnect() {	
 		System.out.println("Connected to client!");
+		startTime = System.currentTimeMillis();
 		if(this.isDirectory){
 			
 			JSONObject packet = directoryList();
@@ -397,7 +409,9 @@ public class Main implements ClientFunctions, ServerFunctions {
 			JSONObject packet2 = rh.hashParts(0, new int[] {0});
 			Main.r.send(packet2.toString());
 		} else {
+			endTime = System.currentTimeMillis();
 			System.out.println("\nTotal bytes transmitted (sent and recieved): "+Main.r.numberFormat.format(((Main.r.bytes+FINAL_SEND_LEN)/1024.0))+" kB");
+			System.out.println("Total execution time: " + (endTime - startTime) + " ms");
 			rh.p = 0;
 			try {
 				JSONObject packet = new JSONObject();

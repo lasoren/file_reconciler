@@ -30,6 +30,8 @@ public class FRSocketClient extends SocketClient {
 	
 	private ClientFunctions clientListener;
 	private Socket s;
+	private long startTime = System.currentTimeMillis();
+	private long endTime = System.currentTimeMillis();
 
 	FRSocketClient (String ipaddr, int port, ClientFunctions mainThread) {
 		super(ipaddr, port);
@@ -56,6 +58,7 @@ public class FRSocketClient extends SocketClient {
     	}
     	
     	clientListener.clientOnConnect();
+    	startTime = System.currentTimeMillis();
 
 		String line = "";
         while (true) {  
@@ -83,7 +86,9 @@ public class FRSocketClient extends SocketClient {
 								if (response.optString("opcode").equals(ClientOpcodes.clientDoneEarly.name())) {
 									System.out.print("No files in common to reconcile!");
 								}
+								endTime = System.currentTimeMillis();
 								System.out.println("\nTotal bytes transmitted (sent and recieved): "+Main.r.numberFormat.format((Main.r.bytes/1024.0))+" kB");
+								System.out.println("Total execution time: " + (endTime - startTime) + " ms");
 								break;
 							}
 						} catch (JSONException e) {

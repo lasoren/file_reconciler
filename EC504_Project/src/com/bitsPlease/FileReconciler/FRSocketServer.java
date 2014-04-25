@@ -33,6 +33,8 @@ public class FRSocketServer extends SocketClient {
 	private ServerSocket serv = null;
 	private Socket socket;
 	public static int clientNum = 1;
+	long startTime = System.currentTimeMillis();
+	long endTime = System.currentTimeMillis();
 	
 	FRSocketServer (String ipaddr, int port, ServerFunctions mainThread) {
 		super(ipaddr, port);

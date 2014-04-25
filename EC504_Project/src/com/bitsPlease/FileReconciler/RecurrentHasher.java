@@ -22,7 +22,6 @@ public class RecurrentHasher {
 	
 	boolean allDone = false;
 	public double p = 0;
-	int numtrials = 1;
 	int numfiles = 1;
 	int currentfile = 1;
 	String currentFileName;
@@ -245,7 +244,55 @@ public class RecurrentHasher {
 		double divisor = (long) Math.pow(2, recurrence);
 		double partLength = (fileArraySize/divisor);
 		
-		//there should be 2 or less indices at this point
+		//gotten raw data, which spans the length of the file
+		if (indices.length > 1) {
+			if ((int) (indices[0]*partLength) == 0 && (int) (indices[indices.length-1]*partLength + 2*partLength) >= fileArraySize) {
+				for (int i = 0; i < indices.length; i++) {
+					int length = data[i].length();
+					byte updated[] = new byte[length];
+					for (int j = 0; j < length; j++) {
+						updated[j] = (byte) data[i].optInt(j);
+					}
+					
+					int start = (int) (indices[i]*partLength);
+					int end = (int) (indices[i]*partLength + 2*partLength);
+					if (end >= fileArraySize) {
+						end = (int) fileArraySize;
+					}
+					//replace fileArray
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+					try {
+						outputStream.write(Arrays.copyOfRange(fileArray, 0, start));
+						outputStream.write(updated);
+						if (end < fileArray.length)
+							outputStream.write(Arrays.copyOfRange(fileArray, end, fileArray.length));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					fileArray = outputStream.toByteArray();
+				}
+				
+				allDone = false;
+				JSONObject load = new JSONObject();
+				JSONObject response = new JSONObject();
+				
+				try {
+					load.put("opcode", ServerOpcodes.hashResponse.name());
+					response.put("recurrence", recurrence);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				JSONArray jsonIndices = new JSONArray();
+				try {
+					response.put("indices", jsonIndices);
+					load.put("payload", response);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				return load;
+			}
+		}
+		
 		//System.out.println("Number of indices: " + indices.length);
 		for (int i = 0; i < indices.length; i++) {
 			int length = data[i].length();
@@ -298,7 +345,6 @@ public class RecurrentHasher {
 				//System.out.println("Shift: "+difference);
 				allDone = false;
 				//need to start over now
-				numtrials++;
 				JSONObject load = new JSONObject();
 				JSONObject response = new JSONObject();
 				
