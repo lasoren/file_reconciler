@@ -5,7 +5,7 @@ Advanced Data Structures (ENG EC504 at Boston University) final project to recon
 
 ## Features
 
-Reconcile (make the files the same) any number of arbitrary files (text or binary) between computers. 
+Reconcile (make the same, restore discrepancies) any number of arbitrary files (text or binary) between computers. 
 
 Algorithm is fast and efficient especially for very large files with a small number of changes. A 100 MB file with 5 random insertions, deletions, or modifications can be reconciled between two computers by sending less than 20 kB of data.
 
