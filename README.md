@@ -1,4 +1,6 @@
 file_reconciler
 ===============
 
-ENG EC 504 project to reconcile files with maximal efficiency and minimal communication
+Advanced Data Structures (ENG EC504 at Boston University) final project to reconcile two arbitrary files with maximal efficiency and minimal bandwidth. 
+
+
