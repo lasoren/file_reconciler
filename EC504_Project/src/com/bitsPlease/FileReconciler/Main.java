@@ -398,6 +398,7 @@ public class Main implements ClientFunctions, ServerFunctions {
 			Main.r.send(packet2.toString());
 		} else {
 			System.out.println("\nTotal bytes transmitted (sent and recieved): "+Main.r.numberFormat.format(((Main.r.bytes+FINAL_SEND_LEN)/1024.0))+" kB");
+			rh.p = 0;
 			try {
 				JSONObject packet = new JSONObject();
 				packet.put("opcode", ClientOpcodes.clientDone.name());

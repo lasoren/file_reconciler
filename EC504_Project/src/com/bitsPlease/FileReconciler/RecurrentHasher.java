@@ -49,7 +49,7 @@ public class RecurrentHasher {
 		double partLength = (fileArraySize/divisor);
 		
 		if (indices.length > 0) {
-			double passProgress = ((currentfile-1)*100/numfiles) + Math.round((2*indices[0]*partLength/(double) fileArraySize)*100/numfiles);
+			double passProgress = ((currentfile-1)*100/numfiles) + Math.round((2*indices[0]*partLength/(double) fileArraySize)*100)/numfiles;
 			if (passProgress > p) {
 				p = passProgress;
 			}
@@ -185,7 +185,7 @@ public class RecurrentHasher {
 		double partLength = (fileArraySize/divisor);
 		
 		if (indices.length > 0) {
-			double passProgress = ((currentfile-1)*100/numfiles) +  Math.round((indices[0]*partLength/(double) fileArraySize)*100/numfiles);
+			double passProgress = ((currentfile-1)*100/numfiles) +  Math.round((indices[0]*partLength/(double) fileArraySize)*100)/numfiles;
 			if (passProgress > p) {
 				p = passProgress;
 			}
